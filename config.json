@@ -1,0 +1,68 @@
+{
+    "inbound": {
+        "port": 180,
+        "protocol": "vmess",
+        "settings": {
+            "clients": [
+                {
+                    "id": "f80a70a1-9d36-18f9-56a8-79e4d6fc8019",
+                    "level": 1,
+                    "alterId": 100
+                }
+            ]
+        },
+        "streamSettings": {
+            "network": "tcp",
+            "tcpSettings": {
+                "header": {
+                    "type": "http",
+                    "response": {
+                        "version": "1.1",
+                        "status": "200",
+                        "reason": "OK",
+                        "headers": {
+                            "Content-Type": ["application/octet-stream", "application/x-msdownload", "text/html", "application/x-shockwave-flash"],
+                            "Connection": ["keep-alive"]
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "inboundDetour": [
+        {
+            "port": 18080,
+            "protocol": "vmess",
+            "settings": {
+                "clients": [
+                    {
+                        "id": "f80a70a1-9d36-18f9-56a8-79e4d6fc8019",
+                        "level": 1,
+                        "alterId": 100
+                    }
+                ]
+            },
+            "streamSettings": {
+                "network": "tcp",
+                "tcpSettings": {
+                    "header": {
+                        "type": "http",
+                        "response": {
+                            "version": "1.1",
+                            "status": "200",
+                            "reason": "OK",
+                            "headers": {
+                                "Content-Type": ["application/octet-stream", "application/x-msdownload", "text/html", "application/x-shockwave-flash"],
+                                "Connection": ["keep-alive"]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ],
+    "outbound": {
+        "protocol": "freedom",
+        "settings": {}
+    }
+}
