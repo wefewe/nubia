@@ -2,11 +2,11 @@
 yum install unzip wget net-tools tar curl -y || apt-get install unzip wget net-tools tar curl -y
 
 #下载解压离线包
-area=$(curl -s http://freeapi.ipip.net/`curl -s ifconfig.me`|awk 'gsub(/\["/,""){print $0}'|awk 'gsub(/"\,.*/,""){print $0}')
-if [ "$area" = "中国" ];then
-    wget https://gitee.com/just1601/tiny-sh/blob/master/ssr_jzdh.zip
+area=$(curl -s http://ip-api.com/line|sed -n '3p')
+if [ "$area" = "CN" ];then
+    wget -N --no-check-certificate https://gitee.com/just1601/tiny-sh/blob/master/ssr_jzdh.zip
 else
-    wget https://raw.githubusercontent.com/FH0/nubia/master/ssr_jzdh.zip
+    wget -N --no-check-certificate https://raw.githubusercontent.com/FH0/nubia/master/ssr_jzdh.zip
 fi
 unzip -o ssr_jzdh.zip -d /usr/local/bin
 chmod -R 0777 /usr/local/bin/SSR-Bash-Python
