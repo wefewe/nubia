@@ -1,0 +1,7 @@
+#!/data/data/com.termux/files/usr/bin/expect
+spawn vi [lindex $argv 0]
+send "gg=G\r"
+after 1000
+send ":wq\r"
+spawn sed -i "s/	/    /g" [lindex $argv 0]
+interact
