@@ -10,8 +10,8 @@ echo " 正在安装必要组件,请耐心等待"
 clear
 echo "欢迎使用V2Ray&SSR搭建脚本"
 echo 
-echo " 1.安装SSR"
-echo " 2.安装V2Ray"
+echo " 1.安装SSR(输入ssr进入管理面板)"
+echo " 2.安装V2Ray(输入v2进入管理面板)"
 echo
 echo " 3.安装BBR(安装完成后自动重启系统)"
 echo " 4.安装锐速(安装完成后自动重启系统)"
@@ -43,6 +43,9 @@ elif [ "$choice" = "1" ];then
     fi
     unzip -o ssr.zip
     bash SSR-Bash-Python/install.sh
+    rm -rf SSR-Bash-Python
+    rm -f ssr.zip
+    ssr
 elif [ "$choice" = "2" ];then
     clear
     echo " 1.码云(国内平台)"
@@ -56,6 +59,8 @@ elif [ "$choice" = "2" ];then
     fi
     unzip -o V2Ray.zip
     bash V2Ray/v2ray.sh
+    rm -rf V2Ray*
+    v2
 elif [ "$choice" = "3" ];then
     bash <(curl -L -s https://raw.githubusercontent.com/FH0/nubia/master/bbr.sh)
     reboot
