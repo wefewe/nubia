@@ -11,23 +11,23 @@ clear
 echo -e "欢迎使用V2Ray&SSR搭建脚本"
 echo -e 
 if [ -d "/usr/local/SSR-Bash-Python" ];then
-    echo -e " \033[32m1.\033[0m安装SSR(输入ssr进入管理面板)"
+    echo -e " 1.安装\033[32mSSR\033[0m(输入ssr进入管理面板)"
 else
     echo -e " 1.安装SSR(输入ssr进入管理面板)"
 fi
 if [ -d "/bin/v2ray" ];then
-    echo -e " \033[32m2.\033[0m安装V2Ray(输入v2进入管理面板)"
+    echo -e " 2.安装\033[32mV2Ray\033[0m(输入v2进入管理面板)"
 else
     echo -e " 2.安装V2Ray(输入v2进入管理面板)"
 fi
 echo -e
 if lsmod | grep -q bbr;then
-    echo -e " \033[32m3.\033[0m安装BBR(安装完成后自动重启系统)"
+    echo -e " 3.安装\033[32mBBR\033[0m(安装完成后自动重启系统)"
 else
     echo -e " 3.安装BBR(安装完成后自动重启系统)"
 fi
 if ps -ef | grep "peeder" | grep -qv "grep";then
-    echo -e " \033[32m4.\033[0m安装锐速(安装完成后自动重启系统)"
+    echo -e " 4.安装\033[32m锐速\033[0m(安装完成后自动重启系统)"
 else
     echo -e " 4.安装锐速(安装完成后自动重启系统)"
 fi
