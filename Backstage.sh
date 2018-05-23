@@ -76,7 +76,14 @@ elif [ "$choice" = "2" ];then
     unzip -o V2Ray.zip
     bash V2Ray/v2ray.sh
     rm -rf V2Ray*
+    #写入公网IP
+    public_ip=`curl -s http://ip-api.com/xml | grep query | grep -o "[0-9].*[0-9]"`
+    while [ "$public_ip" = "" ];do
+        public_ip=`curl -s http://ip-api.com/xml | grep query | grep -o "[0-9].*[0-9]"`
+    done
+    sed -i 's/public_ip/'$public_ip'/g' /bin/v2
     v2
+
 elif [ "$choice" = "3" ];then
     bash <(curl -L -s https://raw.githubusercontent.com/FH0/nubia/master/bbr.sh)
     reboot
