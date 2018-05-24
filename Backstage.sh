@@ -70,8 +70,18 @@ function install_serverspeeder {
     reboot
 }
 
-function install_caddy {
-    bash <(curl -sL https://raw.githubusercontent.com/FH0/nubia/master/caddy.sh)
+function install_nginx {
+    apt-get install nginx -y > /dev/null 2>&1
+    rpm -Uvh http://nginx.org/packages/centos/7/noarch/RPMS/nginx-release-centos-7-0.el7.ngx.noarch.rpm > /dev/null 2>&1
+    yum install nginx -y > /dev/null 2>&1
+    rm -rf /nginx_share > /dev/null 2>&1
+    mkdir /nginx_share 
+    chmod 0777 /nginx_share
+    echo -e 'user  nginx;\nworker_processes  1;\npid        /var/run/nginx.pid;\n \nevents {\n    worker_connections  1024;\n}\n \nhttp {\n    server {\n        listen  8888;\n        server_name  localhost;\n        charset utf-8;\n        root /nginx_share;\n        location / {\n            autoindex on;\n            autoindex_exact_size on;\n            autoindex_localtime on;\n        }\n    }\n}' > /etc/nginx/nginx.conf
+    systemctl restart nginx.service
+    systemctl enable nginx.service
+    clear
+    pannel
 }
 
 function pannel {
@@ -84,27 +94,33 @@ function pannel {
     echo -e "欢迎使用 V2Ray/SSR 搭建脚本"
     echo -e 
     if [ -d "/usr/local/SSR-Bash-Python" ];then
-        echo -e " 1.安装\033[32mSSR\033[0m(输入ssr进入管理面板)"
+        echo -e " 1.重装\033[32mSSR\033[0m"
     else
         echo -e " 1.安装SSR(输入ssr进入管理面板)"
     fi
     if [ -d "/bin/v2ray" ];then
-        echo -e " 2.安装\033[32mV2Ray\033[0m(输入v2进入管理面板)"
+        echo -e " 2.重装\033[32mV2Ray\033[0m"
     else
         echo -e " 2.安装V2Ray(输入v2进入管理面板)"
     fi
     echo -e
     if [ "`lsmod | grep -q bbr`" != "" ];then
-        echo -e " 3.安装\033[32mBBR\033[0m(安装完成后自动重启系统)"
+        echo -e " 3.重装\033[32mBBR\033[0m"
     else
         echo -e " 3.安装BBR(安装完成后自动重启系统)"
     fi
     if [ "`ps -ef | grep "peeder" | grep -v "grep"`" != "" ];then
-        echo -e " 4.安装\033[32m锐速\033[0m(安装完成后自动重启系统)"
+        echo -e " 4.重装\033[32m锐速\033[0m"
     else
         echo -e " 4.安装锐速(安装完成后自动重启系统)"
     fi
     echo -e
+    if [ "`type nginx | grep "is"`" = "" ];then
+        echo " 5.安装nginx(没有任何说明，慎装)"
+    else
+        echo -e " 5.更新\033[32mnginx\033[0m"    
+    fi
+    echo
     read -p "请选择: " choice
 
     #操作
@@ -113,7 +129,9 @@ function pannel {
     elif [ "$choice" = "2" ];then install_v2
     elif [ "$choice" = "3" ];then install_bbr
     elif [ "$choice" = "4" ];then install_serverspeeder
+    elif [ "$choice" = "5" ];then install_nginx
     fi
 }
 
 pannel
+clear
