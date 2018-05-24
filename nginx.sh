@@ -1,29 +1,14 @@
-#set nginx
-yum -y install gcc gcc-c++ make libtool zlib zlib-devel openssl openssl-devel pcre pcre-devel
-wget http://nginx.org/download/nginx-1.10.1.tar.gz
-tar -zxvf nginx-1.10.1.tar.gz
-cd nginx-1.10.1
-./configure --prefix=/usr/local/webserver/nginx --with-http_stub_status_module --with-http_ssl_module --with-pcre
-make && make install
-mkdir /accept
-echo 'worker_processes  1;
-events {
-    worker_connections  1024;
-}
-http {
-    include       mime.types;
-    default_type  application/octet-stream;
-    sendfile        on;
-    keepalive_timeout  65;
-        server {
-        listen       8082;        
-        server_name  localhost;   
-        root    /accept;  
-        autoindex on;             
-        autoindex_exact_size off;
-        }
-}' > /usr/local/webserver/nginx/conf/nginx.conf
-/usr/local/webserver/nginx/sbin/nginx
-ln -s /home/f/ /accept/
-chmod 777 -R /accept
-chmod 777 -R /home
+#!/bin/bash
+
+apt-get install nginx -y > /dev/null 2>&1
+rpm -Uvh http://nginx.org/packages/centos/7/noarch/RPMS/nginx-release-centos-7-0.el7.ngx.noarch.rpm > /dev/null 2>&1
+yum install nginx -y > /dev/null 2>&1
+
+rm -rf /nginx_share > /dev/null 2>&1
+mkdir /nginx_share 
+chmod 0777 /nginx_share
+
+echo -e 'user  nginx;\nworker_processes  1;\npid        /var/run/nginx.pid;\n \nevents {\n    worker_connections  1024;\n}\n \nhttp {\n    server {\n        listen  8888;\n        server_name  localhost;\n        charset utf-8;\n        root /nginx_share;\n        location / {\n            autoindex on;\n            autoindex_exact_size on;\n            autoindex_localtime on;\n        }\n    }\n}' > /etc/nginx/nginx.conf
+
+systemctl restart nginx.service
+systemctl enable nginx.service
