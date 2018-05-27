@@ -52,11 +52,15 @@ function install_v2 {
     bash V2Ray/v2ray.sh
     rm -rf V2Ray*
     #写入公网IP
-    public_ip=`curl -s http://ip-api.com/xml | grep query | grep -o "[0-9].*[0-9]"`
-    while [ "$public_ip" = "" ];do
-        public_ip=`curl -s http://ip-api.com/xml | grep query | grep -o "[0-9].*[0-9]"`
+    vps_information=`curl -s http://ip-api.com/xml | grep -E "countryCode|query"`
+    while [ "$vps_information" = "" ];do
+        vps_information=`curl -s http://ip-api.com/xml`
+        sleep 0.5
     done
+    public_ip=`echo ''$vps_information'' | grep -o "[0-9].*[0-9]"`
+    City=`echo ''$vps_information'' | awk -F 'CDATA' '{print $2}' | awk -F 'countryCode' '{print $1}' | grep -Eo "[A-Z]+"`
     sed -i 's/public_ip/'$public_ip'/g' /bin/v2
+    sed -i 's/City/'$City'/g' /bin/v2
     v2
 }
 
