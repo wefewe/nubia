@@ -37,12 +37,13 @@ function install_ssr {
 
 function install_v2 {
     clear
-    country=`curl -sL http://ip-api.com/xml | grep "country"`
-    while [ "$country" = "" ];do
-        country=`curl -sL http://ip-api.com/xml | grep "country"`
+    vps_information=`curl -s https://api.myip.com/`
+    sleep 0.5
+    while [ "$vps_information" = "" ];do
+        vps_information=`curl -s https://api.myip.com/`
         sleep 0.5
     done
-    zip=`echo "$country" | grep "China"`
+    zip=`echo "$vps_information" | grep "CN"`
     if [ "$zip" != "" ];then
         wget -N --no-check-certificate https://gitee.com/just1601/tiny-sh/raw/master/V2Ray.zip
     else
@@ -51,16 +52,6 @@ function install_v2 {
     unzip -o V2Ray.zip
     bash V2Ray/v2ray.sh
     rm -rf V2Ray*
-    #写入公网IP
-    vps_information=`curl -s http://ip-api.com/xml | grep -E "countryCode|query"`
-    while [ "$vps_information" = "" ];do
-        vps_information=`curl -s http://ip-api.com/xml`
-        sleep 0.5
-    done
-    public_ip=`echo ''$vps_information'' | grep -o "[0-9].*[0-9]"`
-    City=`echo ''$vps_information'' | awk -F 'CDATA' '{print $2}' | awk -F 'countryCode' '{print $1}' | grep -Eo "[A-Z]+"`
-    sed -i 's/public_ip/'$public_ip'/g' /bin/v2
-    sed -i 's/City/'$City'/g' /bin/v2
     v2
 }
 
