@@ -105,8 +105,8 @@ function pannel {
     [ "`lsmod | grep bbr`" = "" ] && echo -e " 3.安装BBR(安装完成后自动重启系统)"
     [ "`lsmod | grep bbr`" != "" ] && echo -e " 3.重装\033[32mBBR\033[0m"
     echo 
-    [ "`which nginx`" = "" ] && echo " 4.安装nginx(没有任何说明，慎装)"
-    [ "`which nginx`" != "" ] && echo -e " 4.更新\033[32mnginx\033[0m"    
+    [ -f '/usr/sbin/nginx' ] && echo -e " 4.更新\033[32mnginx\033[0m"    
+    [ ! -f '/usr/sbin/nginx' ] && echo " 4.安装nginx(没有任何说明，慎装)"
     echo && read -p "请选择: " choice
 
     #操作
