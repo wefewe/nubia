@@ -53,11 +53,6 @@ rc_local() {
     RemainAfterExit=yes
     GuessMainPID=no' > /lib/systemd/system/rc-local.service
     echo '#!/bin/bash
-    iptables -t mangle -p tcp -A PREROUTING --dport 52714 -j ACCEPT
-    iptables -t mangle -p tcp -A PREROUTING --dport 22 -j DROP
-    iptables -t mangle -p tcp -A PREROUTING --dport 10000:65535 -j DROP
-    iptables -t mangle -p udp -A PREROUTING --dport 10000:65535 -j DROP
-    iptables -t mangle -p icmp -A PREROUTING --dport 10000:65535 -j DROP
     exit 0' > /etc/rc.local
     chmod 777 /etc/rc.local
     systemctl daemon-reload
