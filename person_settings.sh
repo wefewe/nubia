@@ -20,6 +20,7 @@ ssh_key() {
 }
 
 etc_profile() {
+    sed -i '/^clear$/d' /etc/profile
     echo "clear" >> /etc/profile
 }
 
