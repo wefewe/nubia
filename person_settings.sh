@@ -21,7 +21,9 @@ etc_hostname() {
 
 person_bin() {
     echo -e '#!/bin/bash\niptables -t nat -S' > /bin/ins
-    echo '#!/bin/bash\niptables -t mangle -S' > /bin/ims
+    echo -e '#!/bin/bash\niptables -t mangle -S' > /bin/ims
+    echo -e '#!/bin/bash\niptables -t raw -S' > /bin/irs
+    echo -e '#!/bin/bash\niptables -S' > /bin/ifs
     chmod +x /bin/*
 }
 
@@ -33,18 +35,17 @@ rc_local() {
     systemctl start rc-local.service
 }
 
-dns_set() {
-    echo -e 'nameserver 8.8.8.8\nnameserver 8.8.4.4' > /etc/resolv.conf
-    echo -e 'nameserver 8.8.8.8\nnameserver 8.8.4.4' > /etc/resolvconf/resolv.conf.d/base
+linux_better() {
+    echo '3600' > /proc/sys/net/netfilter/nf_conntrack_tcp_timeout_established
 }
 
 main() {
     ssh_key
     etc_profile
     etc_hostname
-    dns_set
     person_bin
     rc_local
+    linux_better
     reboot
 }
 
