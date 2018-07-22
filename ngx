@@ -1,0 +1,51 @@
+#!/bin/bash
+
+change_port() {
+    echo
+    read -p "请输入端口：" input_port
+    [ -z "$input_port" ] && main
+    sed -i "s|${nginx_port}\;|${input_port}\;|" /etc/nginx/nginx.conf
+    sleep 1.5
+    main
+}
+
+change_wp() {
+    echo
+    read -p "请输入路径：" input_wp
+    [ -z "$input_wp" ] && main
+    sed -i "s|${nginx_wp}\;|${input_wp}\;|" /etc/nginx/nginx.conf
+    sleep 1.5
+    main
+}
+
+systemctl_control() {
+    if [ -z "$(pgrep nginx)" ];then
+        systemctl start nginx
+        systemctl enable nginx
+    else
+        systemctl stop nginx
+        systemctl disable nginx
+    fi > /dev/null 2>&1
+    sleep 1.5
+    main
+}
+
+main() {
+    nginx_port=$(grep "listen" /etc/nginx/nginx.conf | grep -Eo "[0-9]*")
+    nginx_wp=$(grep "root /" /etc/nginx/nginx.conf | awk '{print $2}' | sed 's|.$||')
+    clear
+    echo
+    echo -e " 1.更改端口 \033[33m$nginx_port\033[0m"
+    echo -e " 2.更改访问地址 \033[33m$nginx_wp\033[0m"
+    [ -z "$(pgrep nginx)" ] && echo " 3.启动nginx"
+    [ -z "$(pgrep nginx)" ] || echo " 3.停止nginx"
+    echo
+    read -p "请选择：" nginx_choice
+
+    [ "$nginx_choice" = "1" ] && change_port
+    [ "$nginx_choice" = "2" ] && change_wp
+    [ "$nginx_choice" = "3" ] && systemctl_control
+    clear && exit 0
+}
+
+main
