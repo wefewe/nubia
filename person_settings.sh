@@ -5,6 +5,7 @@ ssh_key() {
     echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDuwLr5N5CxF51tEOXtJJ3Qr2+uY7lVtZfWNwN59yewWUhc6p77CiWj917TrOgrgGMIIgb7AXU0vrdNr2IFJ0fNdyF9S9dfEU8+KAqr+FUH7ywQ8b2sktbqTyVLEZ/lVcd7/+KPxFIP7L7UILqEIIx0rGPVAax8UEwLtMlJ1fakPL98UMTx94hQ2ZW8LW6MJsKd2RWoMkbsn0Joif3SiUGCeGcY8IDzQC8xUZQPFJxVkHqj5Z4iDqms8TNNaKYp7nirTTGHiFW0x7uSAoBxXqKur+c0JLc3ABi5FIlC3+yVtwVr7l4/eHK7bRb/iERoMNEyVF22U5Sha41NQZquDitF root@localhost' >> /root/.ssh/authorized_keys
     chmod 600 /root/.ssh/authorized_keys
     echo -e 'X11Forwarding yes\nPrintMotd no\nAcceptEnv LANG LC_*\nSubsystem	sftp	/usr/lib/openssh/sftp-server\nPermitRootLogin yes\nChallengeResponseAuthentication no\nPasswordAuthentication no\nUsePAM no\nRSAAuthentication yes\nPubkeyAuthentication yes\nPort 52714' > /etc/ssh/sshd_config
+    systemctl restart sshd
 }
 
 etc_profile() {
@@ -42,8 +43,8 @@ install_nginx() {
     chmod 777 /nginx_share
     useradd nginx
     echo -e 'user  nginx;\nworker_processes  1;\npid        /var/run/nginx.pid;\n \nevents {\n    worker_connections  1024;\n}\n \nhttp {\n    server {\n        listen  8888;\n        server_name  localhost;\n        charset utf-8;\n        root /nginx_share;\n        location / {\n            autoindex on;\n            autoindex_exact_size on;\n            autoindex_localtime on;\n        }\n    }\n}' > /etc/nginx/nginx.conf
-    systemctl restart nginx.service
-    systemctl enable nginx.service
+    systemctl stop nginx.service
+    systemctl disable nginx.service
     clear && pannel
     curl -s https://raw.githubusercontent.com/FH0/nubia/master/ngx > /bin/ngx
     chmod +x /bin/ngx
@@ -56,7 +57,6 @@ main() {
     person_bin
     rc_local
     install_nginx
-    reboot
 }
 
 main
