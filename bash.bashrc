@@ -3,7 +3,7 @@ shopt -s checkwinsize
 if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
     debian_chroot=$(cat /etc/debian_chroot)
 fi
-PS1="\033[33m\u@debian\033[0m:\w\$ "
+PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
 if [ -x /usr/lib/command-not-found -o -x /usr/share/command-not-found/command-not-found ]; then
     function command_not_found_handle {
         if [ -x /usr/lib/command-not-found ]; then
