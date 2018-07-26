@@ -1,4 +1,5 @@
 #!/bin/bash
+export PATH="/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/root/bin"
 
 install_bbr() {
     if [ -f "/usr/bin/apt-get" ];then
