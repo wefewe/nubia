@@ -1,5 +1,5 @@
 #!/bin/bash
-export PATH="/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/root/bin"
+export PATH="/bin:/usr/bin:/usr/local/bin:/sbin:/usr/sbin:/usr/local/sbin"
 
 ssh_key() {
     [ -d "/root/.ssh" ] || mkdir /root/.ssh
@@ -47,8 +47,10 @@ install_nginx() {
 } > /dev/null 2>&1
 
 set_bash() {
-    curl -sL https://raw.githubusercontent.com/FH0/nubia/master/bash.bashrc > /etc/bash.bashrc
-    [ -f "/usr/bin/yum" ] && sed -i 's|debian|centos|' /etc/bash.bashrc
+    sed -i '/^PS1/d' /root/.bashrc
+    echo "PS1='\[\e[33m\]\u@debian\[\e[m\]:\w\$ '" >> /root/.bashrc
+    chmod 644 /root/.bashrc
+    [ -f "/usr/bin/yum" ] && sed -i 's|debian|centos|' /root/.bashrc
 }
 
 main() {
