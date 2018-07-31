@@ -5,8 +5,12 @@ ssh_key() {
     [ -d "/root/.ssh" ] || mkdir /root/.ssh
     echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDuwLr5N5CxF51tEOXtJJ3Qr2+uY7lVtZfWNwN59yewWUhc6p77CiWj917TrOgrgGMIIgb7AXU0vrdNr2IFJ0fNdyF9S9dfEU8+KAqr+FUH7ywQ8b2sktbqTyVLEZ/lVcd7/+KPxFIP7L7UILqEIIx0rGPVAax8UEwLtMlJ1fakPL98UMTx94hQ2ZW8LW6MJsKd2RWoMkbsn0Joif3SiUGCeGcY8IDzQC8xUZQPFJxVkHqj5Z4iDqms8TNNaKYp7nirTTGHiFW0x7uSAoBxXqKur+c0JLc3ABi5FIlC3+yVtwVr7l4/eHK7bRb/iERoMNEyVF22U5Sha41NQZquDitF root@localhost' >> /root/.ssh/authorized_keys
     chmod 600 /root/.ssh/authorized_keys
-    echo -e 'X11Forwarding yes\nPrintMotd no\nAcceptEnv LANG LC_*\nSubsystem	sftp	/usr/lib/openssh/sftp-server\nPermitRootLogin yes\nChallengeResponseAuthentication no\nPasswordAuthentication no\nUsePAM no\nRSAAuthentication yes\nPubkeyAuthentication yes\nPort 52714' > /etc/ssh/sshd_config
-    [ -f "/usr/bin/yum" ] && sed -i 's|^Subsystem	sftp.*|Subsystem	sftp /usr/libexec/openssh/sftp-server|' /etc/ssh/sshd_config
+    sed -i '/ChallengeResponseAuthentication/d' /etc/ssh/sshd_config
+    sed -i '/PasswordAuthentication/d' /etc/ssh/sshd_config
+    sed -i '/Port /d' /etc/ssh/sshd_config
+    echo 'ChallengeResponseAuthentication no' >> /etc/ssh/sshd_config
+    echo 'PasswordAuthentication no' >> /etc/ssh/sshd_config
+    echo 'Port 52714' >> /etc/ssh/sshd_config
     systemctl restart sshd
 }
 
@@ -44,11 +48,11 @@ install_nginx() {
     clear && pannel
     curl -s https://raw.githubusercontent.com/FH0/nubia/master/ngx > /bin/ngx
     chmod +x /bin/ngx
-} > /dev/null 2>&1
+}
 
 set_bash() {
     sed -i '/^PS1/d' /root/.bashrc
-    echo "PS1='\[\e[33m\]\u@debian\[\e[m\]:\w\$ '" >> /root/.bashrc
+    echo "PS1='\[\e[33m\]\u@debian\[\e[m\]:\w\\$ '" >> /root/.bashrc
     chmod 644 /root/.bashrc
     [ -f "/usr/bin/yum" ] && sed -i 's|debian|centos|' /root/.bashrc
 }
