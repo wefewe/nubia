@@ -52,7 +52,7 @@ install_nginx() {
 
 set_bash() {
     sed -i '/^PS1/d' /root/.bashrc
-    echo "PS1='\[\e[33m\]\u@debian\[\e[m\]:\w\\$ '" >> /root/.bashrc
+    echo "PS1='\[\e[47;30m\]\u@debian\[\e[m\]:\w\\$ '" >> /root/.bashrc
     chmod 644 /root/.bashrc
     [ -f "/usr/bin/yum" ] && sed -i 's|debian|centos|' /root/.bashrc
 }
