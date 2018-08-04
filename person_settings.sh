@@ -36,7 +36,7 @@ rc_local() {
 }
 
 install_nginx() {
-    apt-get install nginx -y
+    apt-get install nginx aria2 -y
     rpm -Uvh http://nginx.org/packages/centos/7/noarch/RPMS/nginx-release-centos-7-0.el7.ngx.noarch.rpm
     yum install nginx -y
     [ -d "/nginx_share" ] || mkdir /nginx_share
@@ -45,7 +45,6 @@ install_nginx() {
     echo -e 'user  nginx;\nworker_processes  1;\npid        /var/run/nginx.pid;\n \nevents {\n    worker_connections  1024;\n}\n \nhttp {\n    server {\n        listen  8888;\n        server_name  localhost;\n        charset utf-8;\n        root /nginx_share;\n        location / {\n            autoindex on;\n            autoindex_exact_size on;\n            autoindex_localtime on;\n        }\n    }\n}' > /etc/nginx/nginx.conf
     systemctl stop nginx.service
     systemctl disable nginx.service
-    clear && pannel
     curl -s https://raw.githubusercontent.com/FH0/nubia/master/ngx > /bin/ngx
     chmod +x /bin/ngx
 }
@@ -73,3 +72,4 @@ main() {
 }
 
 main
+clear

@@ -3,19 +3,19 @@
 change_port() {
     echo
     read -p "请输入端口：" input_port
-    [ -z "$input_port" ] && main
+    [ -z "$input_port" ] && pannel
     sed -i "s|${nginx_port}\;|${input_port}\;|" /etc/nginx/nginx.conf
     sleep 1.5
-    main
+    pannel
 }
 
 change_wp() {
     echo
     read -p "请输入路径：" input_wp
-    [ -z "$input_wp" ] && main
+    [ -z "$input_wp" ] && pannel
     sed -i "s|${nginx_wp}\;|${input_wp}\;|" /etc/nginx/nginx.conf
     sleep 1.5
-    main
+    pannel
 }
 
 systemctl_control() {
@@ -27,10 +27,27 @@ systemctl_control() {
         systemctl disable nginx
     fi > /dev/null 2>&1
     sleep 0.8
-    main
+    pannel
 }
 
-main() {
+aria2_download() {
+    echo
+    read -p "设置线程数：" download_thread
+    echo
+    read -p "请输入文件直链：" file_url
+    [ -z "$file_url" ] || (aria2c -c -s $download_thread -d $nginx_wp $file_url && echo)
+    pannel
+}
+
+wget_download() {
+    echo
+    read -p "请输入文件直链：" file_url
+    echo
+    [ -z "$file_url" ] || (wget -P $nginx_wp $file_url && echo)
+    pannel
+}
+
+pannel() {
     nginx_port=$(grep "listen" /etc/nginx/nginx.conf | grep -Eo "[0-9]*")
     nginx_wp=$(grep "root /" /etc/nginx/nginx.conf | awk '{print $2}' | sed 's|.$||')
     if [ -z "$(grep -Eo "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" /bin/ngx)" ];then
@@ -45,13 +62,17 @@ main() {
     echo -e " 2.更改访问地址 \033[33m$nginx_wp\033[0m"
     [ -z "$(pgrep nginx)" ] && echo " 3.启动nginx"
     [ -z "$(pgrep nginx)" ] || echo -e " 3.停止\033[32mnginx\033[0m  \033[33mhttp://${public_ip}:${nginx_port}\033[0m"
+    echo -e " 4.使用wget下载文件到\033[33m$nginx_wp\033[0m"
+    [ -f "/usr/bin/apt-get" ] && echo -e " 5.使用aria2下载文件到\033[33m$nginx_wp\033[0m"
     echo
     read -p "请选择：" nginx_choice
 
     [ "$nginx_choice" = "1" ] && change_port
     [ "$nginx_choice" = "2" ] && change_wp
     [ "$nginx_choice" = "3" ] && systemctl_control
+    [ "$nginx_choice" = "4" ] && wget_download
+    [ -f "/usr/bin/apt-get" ] && [ "$nginx_choice" = "5" ] && aria2_download
     clear && exit 0
 }
 
-main
+pannel
