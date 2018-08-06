@@ -1,0 +1,13 @@
+[Unit]
+Description=Dnsmasq Service
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/sbin/dnsmasq -d -C /etc/dnsmasq.conf
+ExecStop=pkill dnsmasq
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
