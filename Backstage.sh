@@ -43,19 +43,7 @@ install_ssr() {
 }
 
 install_v2() {
-    vps_information=$(curl -s https://api.myip.com/)
-    sleep 0.5
-    while [ "$vps_information" = "" ];do
-        vps_information=$(curl -s https://api.myip.com/)
-        sleep 0.5
-    done
-    zip=$(echo "$vps_information" | grep "CN")
-    [ "$zip" = "" ] && wget -N --no-check-certificate https://raw.githubusercontent.com/FH0/nubia/master/V2Ray.zip
-    [ "$zip" != "" ] && wget -N --no-check-certificate https://gitee.com/just1601/tiny-sh/raw/master/V2Ray.zip
-    unzip -o V2Ray.zip
-    bash V2Ray/v2ray.sh
-    rm -rf V2Ray*
-    v2
+    bash <(curl -sL https://raw.githubusercontent.com/FH0/nubia/master/V2Ray.sh)
 }
 
 pannel() {
