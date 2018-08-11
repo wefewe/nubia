@@ -1,0 +1,13 @@
+[Unit]
+Description=Koolproxy Service
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+ExecStart=/bin/koolproxy start
+ExecStop=/bin/koolproxy stop
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

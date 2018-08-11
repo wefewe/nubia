@@ -1,0 +1,13 @@
+[Unit]
+Description=dnsmasq Service
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+ExecStart=/bin/v2ray/dnsmasq -d -C /bin/v2ray/dnsmasq
+ExecStop=pkill dnsmasq
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

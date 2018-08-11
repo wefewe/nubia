@@ -1,0 +1,13 @@
+[Unit]
+Description=V2Ray Service
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+ExecStart=/bin/v2ray/v2ray -config /bin/v2ray/config.json
+ExecStop=pkill v2ray
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
