@@ -61,8 +61,8 @@ main() {
     apt-get upgrade -y
     yum update -y
     yum upgrade -y
-    apt-get install curl wget net-tools make unzip tar zip vim -y
-    yum install curl wget net-tools make unzip tar zip vim -y
+    apt-get install curl wget net-tools make unzip tar zip vim dnsutils -y
+    yum install curl wget net-tools make unzip tar zip vim bind-utils -y
     ssh_key
     etc_profile
     person_bin

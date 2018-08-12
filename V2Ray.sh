@@ -48,6 +48,7 @@ install_v2ray() {
     cd /bin/v2ray
     wget -q -N --no-check-certificate https://raw.githubusercontent.com/FH0/nubia/master/V2Ray.zip
     unzip -q V2Ray.zip
+    cp /bin/v2ray/*.service /etc/systemd/system
     rm -f V2Ray.zip
     chmod 777 -R /bin/v2ray
     cp koolproxy /bin
@@ -60,7 +61,7 @@ install_v2ray() {
     [ -z "$v2ray_uuid" ] && v2ray_uuid=$(cat /proc/sys/kernel/random/uuid)
     uuid=$(grep '"id"' /bin/v2ray/config.json | awk -F '"id": "' '{print $2}' | awk -F '",' '{print $1}' | sort -u)
     sed -i 's|'$uuid'|'$v2ray_uuid'|g' /bin/v2ray/config.json
-    cp $0 /bin/v2
+    curl -s https://raw.githubusercontent.com/FH0/nubia/master/V2Ray.sh > /bin/v2
     chmod +x /bin/v2
     vps_information=$(curl -s https://api.myip.com/)
     echo $vps_information | grep -Eo '[0-9].*[0-9]' > /bin/v2ray/JZDH.txt
@@ -69,6 +70,7 @@ install_v2ray() {
     #定时缓存IP信息
     echo '* * * * * /bin/v2 get' > /bin/v2ray/crontab.txt
     crontab /bin/v2ray/crontab.txt
+    clear
     pannel
 }
 
@@ -197,7 +199,7 @@ update_v2ray() {
 }
 
 bbr_settings() {
-    if [ -z "$(pgrep v2ray)" ];then
+    if [ -z "$(lsmod | grep bbr)" ];then
         if [ -f "/usr/bin/apt-get" ];then
             sed -i '/^net.core.default_qdisc=fq$/d' /etc/sysctl.conf
             sed -i '/^net.ipv4.tcp_congestion_control=bbr$/d' /etc/sysctl.conf
@@ -220,7 +222,6 @@ bbr_settings() {
             systemctl start rc-local.service
             clear && echo 'BBR安装完成，需要重启系统生效'
             echo
-            pannel
         fi
     else
         sed -i '/net.core.default_qdisc/d' /etc/sysctl.conf
@@ -228,8 +229,8 @@ bbr_settings() {
         sysctl -p
         clear && echo "BBR已关闭，需要重启系统生效"
         echo
-        pannel
     fi
+    pannel
 }
 
 dns_settings() {
@@ -328,7 +329,6 @@ pannel() {
     uuid=$(grep '"id"' /bin/v2ray/config.json | awk -F '"id": "' '{print $2}' | awk -F '",' '{print $1}' | sort -u)
     local_ip=$(ip addr | grep -Eo "inet[ ]*[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | grep -v "127.0.0.1" | grep -Eo "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*")
     connection_total=$(netstat -anp | grep "^tcp.*ESTABLISHED" | grep -E "${local_ip}:${first_port} |${local_ip}:${second_port} " | awk '{print $5}' | grep -Eo "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | sort -u | wc -l)
-    clear
     echo " V2Ray多功能脚本，欢迎使用"
     echo
     echo -e "  \033[32m1.\033[0m 更换V2Ray内核 \033[33m${v2ray_version}\033[0m"
@@ -350,9 +350,9 @@ pannel() {
     read -p "请选择: " pannel_choice
     [ "$pannel_choice" = "1" ] && update_v2ray
     [ "$pannel_choice" = "2" ] && (uninstall_v2ray;install_v2ray)
-    [ "$pannel_choice" = "3" ] && uninstall_v2ray
+    [ "$pannel_choice" = "3" ] && uninstall_v2ray && exit 0
     [ "$pannel_choice" = "4" ] && chang_uuid
-    [ "$pannel_choice" = "5" ] && chang_second_port
+    [ "$pannel_choice" = "5" ] && chang_first_port
     [ "$pannel_choice" = "6" ] && chang_second_port
     [ "$pannel_choice" = "7" ] && connection_info
     [ "$pannel_choice" = "8" ] && v2ray_systemctl 1
@@ -365,7 +365,7 @@ pannel() {
 
 if [ -z "$1" ];then
     if [ -d "/bin/v2ray" ];then
-        pannel
+        clear && pannel
     else
         install_v2ray
     fi
