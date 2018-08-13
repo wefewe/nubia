@@ -66,7 +66,6 @@ install_v2ray() {
     vps_information=$(curl -s https://api.myip.com/)
     echo $vps_information | grep -Eo '[0-9].*[0-9]' > /bin/v2ray/JZDH.txt
     echo $vps_information | awk -F '"cc":"' '{print $2}' | awk -F '"' '{print $1}' >> /bin/v2ray/JZDH.txt
-    sed -i 's/0.0.0.0/'$(echo $vps_information | grep -Eo '[0-9].*[0-9]')'/g' /bin/v2ray/config.json
     #定时缓存IP信息
     echo '* * * * * /bin/v2 get' > /bin/v2ray/crontab.txt
     crontab /bin/v2ray/crontab.txt
@@ -102,7 +101,7 @@ connection_info() {
         port=$(grep "port" /bin/v2ray/config.json | grep -Eo '[0-9]+')
         for L in ${port};do
             echo "${L}端口："
-            connection_list=$(netstat -anp | grep "^tcp" | grep "${local_ip}:${L} " | awk '{print $5}' | grep -Eo "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | sort -u)
+            connection_list=$(netstat -anp | grep "^tcp.*ESTABLISHED" | grep "${local_ip}:${L} " | awk '{print $5}' | grep -Eo "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | sort -u)
             for X in ${connection_list};do
                 if [ -z "$(grep "${X} " /bin/v2ray/JZDH.txt)" ];then
                     ip_information=$(curl -s 'http://freeapi.ipip.net/'$X'' | sed 's/[[:punct:]]//g')
@@ -299,7 +298,7 @@ get_ip_information() {
     else
         port=$(grep "port" /bin/v2ray/config.json | grep -Eo '[0-9]+')
         for L in ${port};do
-            connection_list=$(netstat -anp | grep "^tcp" | grep "${local_ip}:${L} " | awk '{print $5}' | grep -Eo "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | sort -u)
+            connection_list=$(netstat -anp | grep "^tcp.*ESTABLISHED" | grep "${local_ip}:${L} " | awk '{print $5}' | grep -Eo "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | sort -u)
             for X in ${connection_list};do
                 if [ -z "$(grep "${X} " /bin/v2ray/JZDH.txt)" ];then
                     ip_information=$(curl -s 'http://freeapi.ipip.net/'$X'' | sed 's/[[:punct:]]//g')
@@ -314,21 +313,57 @@ get_ip_information() {
     fi
 }
 
+check_v2ray() {
+    echo
+    echo -e "  \033[32m1.\033[0m 查看一号端口 \033[33m${first_port}\033[0m"
+    echo -e "  \033[32m2.\033[0m 查看二号端口 \033[33m${second_port}\033[0m"
+    echo
+    read -p "请选择: " check_v2ray_choice
+    [ -z "$check_v2ray_choice" ] && pannel
+    echo
+    if [ "$check_v2ray_choice" = "1" ];then
+        v2rayNG=$(echo '{"add":"'$public_ip'","aid":"'$alterId'","host":"k.youku.com","id":"'$uuid'","net":"tcp","path":"","port":"'$first_port'","ps":"'$City'","tls":"","type":"http","v":"2"}' | base64 | sed ':a;N;$!ba;s|\n||g' | sed 's|^|vmess://|g')
+        echo -e "v2rayNG: \033[33m${v2rayNG}\033[0m"
+        echo
+        echo -e "服务IP:   \033[33m${public_ip}\033[0m"
+        echo -e "服务端口: \033[33m${first_port}\033[0m"
+        echo -e "用户ID:   \033[33m${uuid}\033[0m"
+        echo -e "额外ID:   \033[33m100\033[0m"
+        echo -e "传输协议: \033[33mtcp\033[0m"
+        echo -e "伪装类型: \033[33mhttp\033[0m"
+        echo
+        exit 0
+    elif [ "$check_v2ray_choice" = "2" ];then
+        v2rayNG=$(echo '{"add":"'$public_ip'","aid":"'$alterId'","host":"k.youku.com","id":"'$uuid'","net":"tcp","path":"","port":"'$second_port'","ps":"'$City'","tls":"","type":"http","v":"2"}' | base64 | sed ':a;N;$!ba;s|\n||g' | sed 's|^|vmess://|g')
+        echo -e "v2rayNG: \033[33m${v2rayNG}\033[0m"
+        echo
+        echo -e "服务IP:   \033[33m${public_ip}\033[0m"
+        echo -e "服务端口: \033[33m${second_port}\033[0m"
+        echo -e "用户ID:   \033[33m${uuid}\033[0m"
+        echo -e "额外ID:   \033[33m100\033[0m"
+        echo -e "传输协议: \033[33mtcp\033[0m"
+        echo -e "伪装类型: \033[33mhttp\033[0m"
+        echo
+        exit 0
+    fi
+}
+
 pannel() {
     v2ray_status=停止
     [ -z "$(pgrep v2ray)" ] && v2ray_status=启动
     bbr_status=关闭
-    [ -z "$(lsmod | grep bbr)" ] && bbr_status=安装
+    [ -z "$(lsmod | grep bbr)" ] && bbr_status=启动
     koolproxy_status=停止
     [ -z "$(pgrep koolproxy_i386)" ] && koolproxy_status=启动
-    dns_status=关闭
-    [ -z "$(pgrep dnsmasq)" ] && dns_status=搭建
     v2ray_version=$(/bin/v2ray/v2ray --version | sed -n "1p" | awk '{print $2}' | sed 's/.\(.*\)/\1/g')
     first_port=$(grep 'port' /bin/v2ray/config.json | grep -Eo '[0-9]+' | sed -n '1p')
     second_port=$(grep 'port' /bin/v2ray/config.json | grep -Eo '[0-9]+' | sed -n '2p')
     uuid=$(grep '"id"' /bin/v2ray/config.json | awk -F '"id": "' '{print $2}' | awk -F '",' '{print $1}' | sort -u)
     local_ip=$(ip addr | grep -Eo "inet[ ]*[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | grep -v "127.0.0.1" | grep -Eo "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*")
     connection_total=$(netstat -anp | grep "^tcp.*ESTABLISHED" | grep -E "${local_ip}:${first_port} |${local_ip}:${second_port} " | awk '{print $5}' | grep -Eo "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | sort -u | wc -l)
+    public_ip=$(cat /bin/v2ray/JZDH.txt | sed -n '1p')
+    City=$(cat /bin/v2ray/JZDH.txt | sed -n '2p')
+
     echo " V2Ray多功能脚本，欢迎使用"
     echo
     echo -e "  \033[32m1.\033[0m 更换V2Ray内核 \033[33m${v2ray_version}\033[0m"
@@ -339,13 +374,15 @@ pannel() {
     echo -e "  \033[32m5.\033[0m 修改一号端口 \033[33m${first_port}\033[0m"
     echo -e "  \033[32m6.\033[0m 修改二号端口 \033[33m${second_port}\033[0m"
     echo -e "  \033[32m7.\033[0m 查看设备连接情况 \033[33m${connection_total}\033[0m"
+    echo -e "  \033[32m8.\033[0m 查看V2Ray配置"
     echo "━━━━━━━━━━━━━━━━"
-    echo -e "  \033[32m8.\033[0m ${v2ray_status}V2Ray"
-    echo -e "  \033[32m9.\033[0m 重启V2Ray"
+    echo -e "  \033[32m9.\033[0m ${v2ray_status}V2Ray"
+    echo -e " \033[32m10.\033[0m 重启V2Ray"
     echo "━━━━━━━━━━━━━━━━"
-    echo -e " \033[32m10.\033[0m ${bbr_status}BBR加速"
-    echo -e " \033[32m11.\033[0m ${koolproxy_status}koolproxy去广告"
-    echo -e " \033[32m12.\033[0m ${dns_status}去广告加速DNS"
+    echo -e " \033[32m11.\033[0m ${bbr_status}BBR加速"
+    echo -e " \033[32m12.\033[0m ${koolproxy_status}koolproxy去广告"
+    [ -z "$(pgrep dnsmasq)" ] || echo -e " \033[32m13.\033[0m ${dns_status}去广告加速DNS 请设置DNS为\033[32m${public_ip}\033[0m"
+    [ -z "$(pgrep dnsmasq)" ] && echo -e " \033[32m13.\033[0m 开启去广告加速DNS"
     echo
     read -p "请选择: " pannel_choice
     [ "$pannel_choice" = "1" ] && update_v2ray
@@ -355,11 +392,12 @@ pannel() {
     [ "$pannel_choice" = "5" ] && chang_first_port
     [ "$pannel_choice" = "6" ] && chang_second_port
     [ "$pannel_choice" = "7" ] && connection_info
-    [ "$pannel_choice" = "8" ] && v2ray_systemctl 1
-    [ "$pannel_choice" = "9" ] && v2ray_systemctl 2
-    [ "$pannel_choice" = "10" ] && bbr_settings
-    [ "$pannel_choice" = "11" ] && koolproxy_settings
-    [ "$pannel_choice" = "12" ] && dns_settings
+    [ "$pannel_choice" = "8" ] && check_v2ray
+    [ "$pannel_choice" = "9" ] && v2ray_systemctl 1
+    [ "$pannel_choice" = "10" ] && v2ray_systemctl 2
+    [ "$pannel_choice" = "11" ] && bbr_settings
+    [ "$pannel_choice" = "12" ] && koolproxy_settings
+    [ "$pannel_choice" = "13" ] && dns_settings
     clear && exit 0
 }
 
