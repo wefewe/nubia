@@ -57,10 +57,6 @@ set_bash() {
 }
 
 main() {
-    apt-get update -y
-    apt-get upgrade -y
-    yum update -y
-    yum upgrade -y
     apt-get install curl wget net-tools make unzip tar zip vim dnsutils -y
     yum install curl wget net-tools make unzip tar zip vim bind-utils -y
     ssh_key
