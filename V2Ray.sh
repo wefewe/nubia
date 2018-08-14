@@ -319,7 +319,7 @@ check_v2ray() {
     echo -e "  \033[32m2.\033[0m 查看二号端口 \033[33m${second_port}\033[0m"
     echo
     read -p "请选择: " check_v2ray_choice
-    [ -z "$check_v2ray_choice" ] && pannel
+    [ -z "$check_v2ray_choice" ] && clear && pannel
     echo
     if [ "$check_v2ray_choice" = "1" ];then
         v2rayNG=$(echo '{"add":"'$public_ip'","aid":"'$alterId'","host":"k.youku.com","id":"'$uuid'","net":"tcp","path":"","port":"'$first_port'","ps":"'$City'","tls":"","type":"http","v":"2"}' | base64 | sed ':a;N;$!ba;s|\n||g' | sed 's|^|vmess://|g')
@@ -370,7 +370,7 @@ pannel() {
     echo -e "  \033[32m2.\033[0m 重装V2Ray"
     echo -e "  \033[32m3.\033[0m 卸载V2Ray"
     echo "━━━━━━━━━━━━━━━━"
-    echo -e "  \033[32m4.\033[0m 修改UUID \033[33m${uuid}\033[0m"
+    echo -e "  \033[32m4.\033[0m 修改UUID"
     echo -e "  \033[32m5.\033[0m 修改一号端口 \033[33m${first_port}\033[0m"
     echo -e "  \033[32m6.\033[0m 修改二号端口 \033[33m${second_port}\033[0m"
     echo -e "  \033[32m7.\033[0m 查看设备连接情况 \033[33m${connection_total}\033[0m"
