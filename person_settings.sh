@@ -56,10 +56,19 @@ set_bash() {
     [ -f "/usr/bin/yum" ] && sed -i 's|debian|centos|' /root/.bashrc
 }
 
+language_cn() {
+    sed -i 's/.*zh_CN.UTF-8/zh_CN.UTF-8/g' /etc/locale.gen
+    locale-gen
+    export LANG=zh_CN.UTF-8
+    sed -i '/^LANG/d' /root/.bashrc
+    echo 'LANG=zh_CN.UTF-8' >> /root/.bashrc
+}
+
 main() {
-    apt-get install curl wget net-tools make unzip tar zip vim dnsutils -y
-    yum install curl wget net-tools make unzip tar zip vim bind-utils -y
+    apt-get install curl wget jq locales net-tools make unzip tar zip vim dnsutils -y
+    yum install curl wget net-tools jq locales make unzip tar zip vim bind-utils -y
     ssh_key
+    language_cn
     etc_profile
     person_bin
     rc_local
