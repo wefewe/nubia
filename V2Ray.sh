@@ -109,34 +109,6 @@ uninstall_v2ray() {
     echo
 }
 
-connection_info() {
-    clear
-    if [ "$connection_total" = "0" ];then
-        pannel
-    else
-        port=$(grep "port" /bin/v2ray/config.json | grep -Eo '[0-9]+')
-        for L in ${port};do
-            echo "${L}端口："
-            connection_list=$(netstat -anp | grep "^tcp.*ESTABLISHED" | grep "${local_ip}:${L} " | awk '{print $5}' | grep -Eo "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | sort -u)
-            for X in ${connection_list};do
-                if [ -z "$(grep "${X} " /bin/v2ray/JZDH.txt)" ];then
-                    ip_information=$(curl -s 'http://freeapi.ipip.net/'$X'' | sed 's/[[:punct:]]//g')
-                    while [ -z ''${ip_information}'' ];do
-                        ip_information=$(curl -s 'http://freeapi.ipip.net/'$X'' | sed 's/[[:punct:]]//g')
-                        sleep 0.3
-                    done
-                    echo "${X} ${ip_information}" >> /bin/v2ray/JZDH.txt
-                else
-                    ip_information=$(grep "$X" /bin/v2ray/JZDH.txt | awk '{print $2}')
-                fi
-                printf "  \033[33m%-20s %-20s\033[0m\n" ${X} ${ip_information}
-            done
-            echo
-        done
-        pannel
-    fi
-}
-
 update_v2ray() {
     linux_digits=32
     [ -d "/lib64" ] && linux_digits=64
@@ -264,14 +236,13 @@ v2ray_systemctl(){
 }
 
 get_ip_information() {
-    first_port=$(grep 'port' /bin/v2ray/config.json | grep -Eo '[0-9]+' | sed -n '1p')
-    second_port=$(grep 'port' /bin/v2ray/config.json | grep -Eo '[0-9]+' | sed -n '2p')
     local_ip=$(ip addr | grep -Eo "inet[ ]*[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | grep -v "127.0.0.1" | grep -Eo "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*")
-    connection_total=$(netstat -anp | grep "^tcp.*ESTABLISHED" | grep -E "${local_ip}:${first_port} |${local_ip}:${second_port} " | awk '{print $5}' | grep -Eo "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | sort -u | wc -l)
+    awk_ports=$(grep -Eo "^[0-9][0-9]*$" /bin/v2ray/v2ray.ini | sed 's|^|\:|g;s|$|\$|g' | tr "\n" "|" | sed 's|\|$||')
+    connection_total=$(netstat -anp | grep "^tcp.*ESTABLISHED" | awk '{if($4~/('$awk_ports')/)print $5}' | grep -Eo "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | sort -u | wc -l)
     if [ "$connection_total" = "0" ];then
         exit 0
     else
-        port=$(grep "port" /bin/v2ray/config.json | grep -Eo '[0-9]+')
+        port=$(grep -Eo "^[0-9][0-9]*$" /bin/v2ray/v2ray.ini)
         for L in ${port};do
             connection_list=$(netstat -anp | grep "^tcp.*ESTABLISHED" | grep "${local_ip}:${L} " | awk '{print $5}' | grep -Eo "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | sort -u)
             for X in ${connection_list};do
@@ -384,6 +355,34 @@ port_setting() {
     port_setting
 }
 
+connection_info() {
+    clear
+    if [ "$connection_total" = "0" ];then
+        pannel
+    else
+        port=$(grep -Eo "^[0-9][0-9]*$" /bin/v2ray/v2ray.ini)
+        for L in ${port};do
+            echo "${L}端口："
+            connection_list=$(netstat -anp | grep "^tcp.*ESTABLISHED" | grep "${local_ip}:${L} " | awk '{print $5}' | grep -Eo "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | sort -u)
+            for X in ${connection_list};do
+                if [ -z "$(grep "${X} " /bin/v2ray/JZDH.txt)" ];then
+                    ip_information=$(curl -s 'http://freeapi.ipip.net/'$X'' | sed 's/[[:punct:]]//g')
+                    while [ -z ''${ip_information}'' ];do
+                        ip_information=$(curl -s 'http://freeapi.ipip.net/'$X'' | sed 's/[[:punct:]]//g')
+                        sleep 0.3
+                    done
+                    echo "${X} ${ip_information}" >> /bin/v2ray/JZDH.txt
+                else
+                    ip_information=$(grep "$X" /bin/v2ray/JZDH.txt | awk '{print $2}')
+                fi
+                printf "  \033[33m%-20s %-20s\033[0m\n" ${X} ${ip_information}
+            done
+            echo
+        done
+        pannel
+    fi
+}
+
 pannel() {
     v2ray_status=停止
     [ -z "$(pgrep v2ray)" ] && v2ray_status=启动
@@ -393,7 +392,8 @@ pannel() {
     [ -z "$(pgrep koolproxy_i386)" ] && koolproxy_status=启动
     v2ray_version=$(/bin/v2ray/v2ray --version | sed -n "1p" | awk '{print $2}' | sed 's/.\(.*\)/\1/g')
     local_ip=$(ip addr | grep -Eo "inet[ ]*[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | grep -v "127.0.0.1" | grep -Eo "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*")
-    connection_total=$(netstat -anp | grep "^tcp.*ESTABLISHED" | grep -E "${local_ip}:${first_port} |${local_ip}:${second_port} " | awk '{print $5}' | grep -Eo "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | sort -u | wc -l)
+    awk_ports=$(grep -Eo "^[0-9][0-9]*$" /bin/v2ray/v2ray.ini | sed 's|^|\:|g;s|$|\$|g' | tr "\n" "|" | sed 's|\|$||')
+    connection_total=$(netstat -anp | grep "^tcp.*ESTABLISHED" | awk '{if($4~/('$awk_ports')/)print $5}' | grep -Eo "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | sort -u | wc -l)
     public_ip=$(cat /bin/v2ray/JZDH.txt | sed -n '1p')
     City=$(cat /bin/v2ray/JZDH.txt | sed -n '2p')
     v2ray_ports=$(grep "^[0-9][0-9]*$" /bin/v2ray/v2ray.ini | tr "\n" " ")
