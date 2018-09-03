@@ -418,7 +418,7 @@ pannel() {
     echo
     read -p "请选择: " pannel_choice
     [ "$pannel_choice" = "1" ] && update_v2ray
-    [ "$pannel_choice" = "2" ] && (uninstall_v2ray;install_v2ray)
+    [ "$pannel_choice" = "2" ] && (uninstall_v2ray;bash <(curl -sL https://raw.githubusercontent.com/FH0/nubia/master/V2Ray.sh))
     [ "$pannel_choice" = "3" ] && uninstall_v2ray && exit 0
     [ "$pannel_choice" = "4" ] && port_setting
     [ "$pannel_choice" = "5" ] && get_v2ray_config
