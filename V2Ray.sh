@@ -5,7 +5,7 @@ wp="/bin/v2ray"
 install_v2ray() {
     linux_digits=32
     [ -d "/lib64" ] && linux_digits=64
-    v2ray_version_default=3.35
+    v2ray_version_default=3.38
     {
         mkdir ${wp}
         cd ${wp}
@@ -30,7 +30,7 @@ echo
 if [ -z "$v2ray_version" ];then
     echo -e "已选择 \033[33m${v2ray_version_default}\033[0m 版本"
     echo
-    v2ray_version=3.35
+    v2ray_version=$v2ray_version_default
 fi
 {
     cd ${wp}
@@ -72,7 +72,7 @@ chmod +x /bin/v2
 vps_information=$(curl -s https://api.myip.com/)
 echo $vps_information | grep -Eo '[0-9].*[0-9]' > ${wp}/JZDH.txt
 echo $vps_information | awk -F '"cc":"' '{print $2}' | awk -F '"' '{print $1}' >> ${wp}/JZDH.txt
-#定时缓存IP信息，更新koolproxy配置文件
+#定时缓存IP信息
 echo '*/5 * * * * /bin/v2 ip_update' > ${wp}/crontab
 crontab ${wp}/crontab
 clear
