@@ -151,35 +151,34 @@ update_v2ray() {
 }
 
 bbr_settings() {
-    if [ -z "$(lsmod | grep bbr)" ];then
-        if [ -f "/usr/bin/apt-get" ];then
-            sed -i '/^net.core.default_qdisc=fq$/d' /etc/sysctl.conf
-            sed -i '/^net.ipv4.tcp_congestion_control=bbr$/d' /etc/sysctl.conf
+    if (("$(uname -r | grep -Eo '^.')" > 3));then
+        if [ -z "$(grep 'net.core.default_qdisc' /etc/sysctl.conf)" ];then
+            sed -i '/net.core.default_qdisc/d' /etc/sysctl.conf
+            sed -i '/net.ipv4.tcp_congestion_control/d' /etc/sysctl.conf
+
+            clear && echo "BBR已关闭，需要重启系统后生效"
+            echo
+        else
             echo "net.core.default_qdisc=fq" >> /etc/sysctl.conf
             echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.conf
             sysctl -p
-        else
-            clear && echo '过程需要10分钟左右，部分场景会卡住，耐心等待'
-            echo
-            sleep 2
-            yum update -y
-            rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
-            rpm -Uvh http://www.elrepo.org/elrepo-release-7.0-2.el7.elrepo.noarch.rpm
-            yum --enablerepo=elrepo-kernel install kernel-ml -y
-            grub2-set-default 0
-            echo -e '[Unit]\nDescription=/etc/rc.local\nConditionPathExists=/etc/rc.local\n\n[Service]\nType=forking\nExecStart=/etc/rc.local start\nTimeoutSec=0\nStandardOutput=tty\nRemainAfterExit=yes\nSysVStartPriority=99\n\n[Install]\nWantedBy=multi-user.target' > /etc/systemd/system/rc-local.service
-            echo -e "#!/bin/bash\nsed -i '/^net.core.default_qdisc=fq$/d' /etc/sysctl.conf\nsed -i '/^net.ipv4.tcp_congestion_control=bbr$/d' /etc/sysctl.conf\necho 'net.core.default_qdisc=fq' >> /etc/sysctl.conf\necho 'net.ipv4.tcp_congestion_control=bbr' >> /etc/sysctl.conf\nsysctl -p\necho -e '#!/bin/sh -e\nexit 0' > /etc/rc.local\nexit 0" > /etc/rc.local
-            chmod +x /etc/rc.local
-            systemctl enable rc-local
-            systemctl start rc-local.service
-            clear && echo 'BBR安装完成，需要重启系统生效'
-            echo
         fi
     else
-        sed -i '/net.core.default_qdisc/d' /etc/sysctl.conf
-        sed -i '/net.ipv4.tcp_congestion_control/d' /etc/sysctl.conf
-        sysctl -p
-        clear && echo "BBR已关闭，需要重启系统生效"
+        clear && echo '过程需要10分钟左右，部分场景会卡住，耐心等待'
+        echo
+        sleep 2
+        yum update -y
+        rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
+        rpm -Uvh http://www.elrepo.org/elrepo-release-7.0-2.el7.elrepo.noarch.rpm
+        yum --enablerepo=elrepo-kernel install kernel-ml -y
+        grub2-set-default 0
+        echo -e '[Unit]\nDescription=/etc/rc.local\nConditionPathExists=/etc/rc.local\n\n[Service]\nType=forking\nExecStart=/etc/rc.local start\nTimeoutSec=0\nStandardOutput=tty\nRemainAfterExit=yes\nSysVStartPriority=99\n\n[Install]\nWantedBy=multi-user.target' > /etc/systemd/system/rc-local.service
+        echo -e "#!/bin/bash\nsed -i '/^net.core.default_qdisc=fq$/d' /etc/sysctl.conf\nsed -i '/^net.ipv4.tcp_congestion_control=bbr$/d' /etc/sysctl.conf\necho 'net.core.default_qdisc=fq' >> /etc/sysctl.conf\necho 'net.ipv4.tcp_congestion_control=bbr' >> /etc/sysctl.conf\nsysctl -p\necho -e '#!/bin/sh -e\nexit 0' > /etc/rc.local\nexit 0" > /etc/rc.local
+        chmod +x /etc/rc.local
+        systemctl daemon-reload
+        systemctl enable rc-local
+        systemctl start rc-local.service
+        clear && echo 'BBR安装完成，需要重启系统生效'
         echo
     fi
     pannel
@@ -361,6 +360,7 @@ koolproxy_info_update(){
         cat ${wp}/koolproxy.txt.bak > ${wp}/koolproxy.txt
     fi
     rm -f ${wp}/koolproxy.txt.bak
+    systemctl restart koolproxy.service
     exit 0
 }
 
