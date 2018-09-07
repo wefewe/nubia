@@ -153,15 +153,15 @@ update_v2ray() {
 bbr_settings() {
     if (("$(uname -r | grep -Eo '^.')" > 3));then
         if [ -z "$(grep 'net.core.default_qdisc' /etc/sysctl.conf)" ];then
-            sed -i '/net.core.default_qdisc/d' /etc/sysctl.conf
-            sed -i '/net.ipv4.tcp_congestion_control/d' /etc/sysctl.conf
-
-            clear && echo "BBR已关闭，需要重启系统后生效"
-            echo
-        else
             echo "net.core.default_qdisc=fq" >> /etc/sysctl.conf
             echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.conf
             sysctl -p
+            clear
+        else
+            sed -i '/net.core.default_qdisc/d' /etc/sysctl.conf
+            sed -i '/net.ipv4.tcp_congestion_control/d' /etc/sysctl.conf
+            clear && echo "BBR已关闭，需要重启系统后生效"
+            echo
         fi
     else
         clear && echo '过程需要10分钟左右，部分场景会卡住，耐心等待'
@@ -332,7 +332,7 @@ connection_info() {
     awk_ports=$(grep -Eo "^[0-9][0-9]*$" ${wp}/v2ray.ini | sed 's|^|\:|g;s|$|\$|g' | tr "\n" "|" | sed 's|\|$||')
     connection_ip=$(netstat -anp | grep "^tcp.*ESTABLISHED" | awk '{if($4~/('$awk_ports')/)print $5}' | grep -Eo "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | sort -u)
     for C in ${connection_ip};do
-        if [ -z "$(grep $C ${wp}/JZDH.txt)" ];then
+        if [ -z "$(grep "$C" ${wp}/JZDH.txt)" ];then
             ip_information=$(curl -s 'http://freeapi.ipip.net/'$C'' | sed 's/[[:punct:]]//g')
             [ -z "$ip_information" ] || echo "${C} ${ip_information}" >> ${wp}/JZDH.txt
         fi
