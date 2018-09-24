@@ -32,10 +32,10 @@ systemctl_control() {
 
 aria2_download() {
     echo
-    read -p "设置线程数：" download_thread
+    read -p "设置线程数[1-16]：" download_thread
     echo
     read -p "请输入文件直链：" file_url
-    [ -z "$file_url" ] || (aria2c -c -s $download_thread -d $nginx_wp $file_url && echo)
+    [ -z "$file_url" ] || (aria2c -c -x $download_thread -d $nginx_wp $file_url && echo)
     pannel
 }
 
