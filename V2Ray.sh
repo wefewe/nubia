@@ -5,13 +5,12 @@ wp="/bin/v2ray"
 install_v2ray() {
     linux_digits=32
     [ -d "/lib64" ] && linux_digits=64
-    v2ray_version_default=3.38
+    v2ray_version_default=3.45
     {
         mkdir ${wp}
         cd ${wp}
         wget -N --no-check-certificate https://raw.githubusercontent.com/FH0/nubia/master/V2Ray.zip
         unzip V2Ray.zip
-        cp ${wp}/*.service /etc/systemd/system
         rm -f V2Ray.zip
         if [ -d "/lib64" ];then
             cp ${wp}/koolproxy_x86_64 ${wp}/KoolProxy
@@ -66,7 +65,18 @@ v2ray_config_reload
 echo "设置完毕，正在安装"
 wait
 chmod 777 -R ${wp}
-systemctl start v2ray.service
+#开机自启
+echo -e '#!/bin/sh\n### BEGIN INIT INFO\n# Provides:          v2ray\n# Required-Start:    $remote_fs $syslog\n# Required-Stop:     $remote_fs $syslog\n# Default-Start:     2 3 4 5\n# Default-Stop:      0 1 6\n# Short-Description: v2ray\n# Description:       v2ray\n### END INIT INFO\n\nnohup /bin/v2ray/v2ray -config /bin/v2ray/config.json > /dev/null 2>&1 &' > /etc/init.d/v2ray
+chmod +x /etc/init.d/v2ray
+cd /etc/init.d && update-rc.d v2ray defaults
+echo -e '#!/bin/sh\n### BEGIN INIT INFO\n# Provides:          pdnsd\n# Required-Start:    $remote_fs $syslog\n# Required-Stop:     $remote_fs $syslog\n# Default-Start:     2 3 4 5\n# Default-Stop:      0 1 6\n# Short-Description: pdnsd\n# Description:       pdnsd\n### END INIT INFO\n\niptables -t nat -I OUTPUT -p udp --dport 53 -j REDIRECT --to 5353\niptables -t nat -I OUTPUT -m owner --uid-owner pdnsd -j ACCEPT\nchown pdnsd /bin/v2ray/pdnsd.conf\nchmod 755 /bin/v2ray/pdnsd.conf\nnohup su - pdnsd -c "/bin/v2ray/pdnsd -c /bin/v2ray/pdnsd.conf" > /dev/null 2>&1 &' > /etc/init.d/DNS
+chmod +x /etc/init.d/DNS
+useradd pdnsd > /dev/null 2>&1
+echo -e '#!/bin/sh\n### BEGIN INIT INFO\n# Provides:          v2ray\n# Required-Start:    $remote_fs $syslog\n# Required-Stop:     $remote_fs $syslog\n# Default-Start:     2 3 4 5\n# Default-Stop:      0 1 6\n# Short-Description: v2ray\n# Description:       v2ray\n### END INIT INFO\n\niptables -t nat -I OUTPUT -p tcp --dport 80 -j REDIRECT --to 3000\niptables -t nat -I OUTPUT -m owner --uid-owner KoolProxy -j ACCEPT\nnohup su - KoolProxy -c "/bin/v2ray/KoolProxy" > /dev/null 2>&1 &' > /etc/init.d/koolproxy
+chmod +x /etc/init.d/koolproxy
+useradd KoolProxy > /dev/null 2>&1
+
+nohup /bin/v2ray/v2ray -config /bin/v2ray/config.json > /dev/null 2>&1 &
 curl -s https://raw.githubusercontent.com/FH0/nubia/master/V2Ray.sh > /bin/v2
 chmod +x /bin/v2
 vps_information=$(curl -s https://api.myip.com/)
@@ -99,17 +109,18 @@ v2ray_config_reload() {
 uninstall_v2ray() {
     echo && echo "回车继续"
     read
-    systemctl stop v2ray.service
-    systemctl disable v2ray.service
-    systemctl stop koolproxy.service
-    systemctl disable koolproxy.service
-    systemctl stop DNS.service
-    systemctl disable DNS.service
+    pkill v2ray
+    pkill pdnsd
+    pkill KoolProxy
+    cd /etc/init.d
+    update-rc.d -f v2ray remove
+    update-rc.d -f koolproxy remove
+    update-rc.d -f DNS remove
     rm -rf ${wp}
-    rm -f /etc/systemd/system/v2ray.service
     rm -f /bin/v2
-    rm -f /etc/systemd/system/DNS.service
-    rm -f /etc/systemd/system/koolproxy.service
+    rm -f /etc/init.d/koolproxy
+    rm -f /etc/init.d/DNS
+    rm -f /etc/init.d/pdnsd
     clear
     echo " V2Ray已停止并且已卸载"
     echo
@@ -143,8 +154,9 @@ update_v2ray() {
     chmod 777 -R ${wp}
     cd ..
     rm -rf v2ray_download
-    systemctl restart v2ray.service
-    systemctl enable v2ray.service > /dev/null 2>&1
+    pkill v2ray
+    nohup /bin/v2ray/v2ray -config /bin/v2ray/config.json > /dev/null 2>&1 &
+    cd /etc/init.d && update-rc.d v2ray defaults
     sleep 0.8
     clear
     pannel
@@ -185,16 +197,21 @@ bbr_settings() {
 }
 
 dns_settings() {
-    useradd pdnsd > /dev/null 2>&1
     if [ -z "$(pgrep pdnsd)" ];then
-        systemctl start DNS.service
-        systemctl enable DNS.service
-        echo '0 1 * * * export PATH="/bin:/usr/bin:/usr/local/bin:/sbin:/usr/sbin:/usr/local/sbin" && ([ -z "$(pgrep pdnsd)" ] || systemctl restart DNS.service)' >> ${wp}/crontab
+        iptables -t nat -I OUTPUT -p udp --dport 53 -j REDIRECT --to 5353
+        iptables -t nat -I OUTPUT -m owner --uid-owner pdnsd -j ACCEPT
+        chown pdnsd /bin/v2ray/pdnsd.conf
+        chmod 755 /bin/v2ray/pdnsd.conf
+        nohup su - pdnsd -c "/bin/v2ray/pdnsd -c /bin/v2ray/pdnsd.conf" > /dev/null 2>&1 &
+        cd /etc/init.d && update-rc.d DNS defaults
+        echo '0 1 * * * export PATH="/bin:/usr/bin:/usr/local/bin:/sbin:/usr/sbin:/usr/local/sbin" && ([ -z "$(pgrep pdnsd)" ] || (pkill pdnsd && nohup su - pdnsd -c "/bin/v2ray/pdnsd -c /bin/v2ray/pdnsd.conf" > /dev/null 2>&1 &)' >> ${wp}/crontab
         crontab ${wp}/crontab
     else
-        systemctl stop DNS.service
-        systemctl disable DNS.service
-        sed -i '/DNS.service/d' ${wp}/crontab
+        pkill pdnsd
+        iptables -t nat -D OUTPUT -p udp --dport 53 -j REDIRECT --to 5353
+        iptables -t nat -D OUTPUT -m owner --uid-owner pdnsd -j ACCEPT
+        cd /etc/init.d && update-rc.d -f DNS remove
+        sed -i '/pdnsd/d' ${wp}/crontab
         crontab ${wp}/crontab
     fi > /dev/null 2>&1
     sleep 0.8
@@ -203,15 +220,18 @@ dns_settings() {
 }
 
 koolproxy_settings() {
-    useradd KoolProxy > /dev/null 2>&1
     if [ -z "$(pgrep KoolProxy)" ];then
         echo '0 1 * * * /bin/v2 koolproxy_update' >> ${wp}/crontab
         crontab ${wp}/crontab
-        systemctl start koolproxy.service
-        systemctl enable koolproxy.service
+        iptables -t nat -I OUTPUT -p tcp --dport 80 -j REDIRECT --to 3000
+        iptables -t nat -I OUTPUT -m owner --uid-owner KoolProxy -j ACCEPT
+        nohup su - KoolProxy -c "/bin/v2ray/KoolProxy" > /dev/null 2>&1 &
+        cd /etc/init.d && update-rc.d koolproxy defaults
     else
-        systemctl stop koolproxy.service
-        systemctl disable koolproxy.service
+        iptables -t nat -D OUTPUT -p tcp --dport 80 -j REDIRECT --to 3000
+        iptables -t nat -D OUTPUT -m owner --uid-owner KoolProxy -j ACCEPT
+        pkill KoolProxy
+        cd /etc/init.d && update-rc.d -f koolproxy remove
         sed -i '/koolproxy_update/d' ${wp}/crontab
         crontab ${wp}/crontab
     fi > /dev/null 2>&1
@@ -223,15 +243,16 @@ koolproxy_settings() {
 v2ray_systemctl(){
     if [ "$1" = "1" ];then
         if [ "$(pgrep v2ray)" = "" ];then
-            systemctl start v2ray.service
-            systemctl enable v2ray.service
+            nohup /bin/v2ray/v2ray -config /bin/v2ray/config.json > /dev/null 2>&1 &
+            cd /etc/init.d && update-rc.d v2ray defaults
         else
-            systemctl stop v2ray.service
-            systemctl disable v2ray.service
+            pkill v2ray
+            cd /etc/init.d && update-rc.d -f v2ray remove
         fi
     elif [ "$1" = "2" ];then
-        systemctl restart v2ray.service
-        systemctl enable v2ray.service
+        pkill v2ray
+        nohup /bin/v2ray/v2ray -config /bin/v2ray/config.json > /dev/null 2>&1 &
+        cd /etc/init.d && update-rc.d v2ray defaults
     fi > /dev/null 2>&1
     sleep 0.8
     clear
@@ -321,7 +342,8 @@ port_setting() {
     fi
     v2ray_config_reload
     if [ ! -z "$(pgrep v2ray)" ];then
-        systemctl restart v2ray.service
+        pkill v2ray
+        nohup /bin/v2ray/v2ray -config /bin/v2ray/config.json > /dev/null 2>&1 &
         sleep 0.8
     fi
     port_setting
@@ -360,8 +382,8 @@ koolproxy_info_update(){
         cat ${wp}/koolproxy.txt.bak > ${wp}/koolproxy.txt
     fi
     rm -f ${wp}/koolproxy.txt.bak
-    systemctl restart koolproxy.service
-    exit 0
+    pkill KoolProxy
+    nohup su - KoolProxy -c "/bin/v2ray/KoolProxy" > /dev/null 2>&1 &
 }
 
 pannel() {
@@ -394,7 +416,7 @@ pannel() {
     echo -e "  \033[32m9.\033[0m ${bbr_status}BBR加速"
     echo -e " \033[32m10.\033[0m ${koolproxy_status}koolproxy去广告"
     [ -z "$(pgrep pdnsd)" ] || echo -e " \033[32m11.\033[0m 关闭DNS加速解析"
-    [ -z "$(pgrep pdnsd)" ] && echo -e " \033[32m11.\033[0m 开启dnsmasq加速DNS解析"
+    [ -z "$(pgrep pdnsd)" ] && echo -e " \033[32m11.\033[0m 开启pdnsd加速DNS解析"
     echo
     read -p "请选择: " pannel_choice
     [ "$pannel_choice" = "1" ] && update_v2ray
