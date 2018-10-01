@@ -11,7 +11,7 @@ change_port() {
     sed -i "s|^port=.*|port=$input_info|" /bin/dlt
     port=$input_info
     pkill python3
-    setsid python3 -m http.server $port > /dev/null 2>&1
+    setsid python3 -m http.server $port > /dev/null 2>&1 &
     pannel
 }
 
@@ -23,7 +23,7 @@ change_wp() {
     wp=$input_info
     cd $wp
     pkill python3
-    setsid python3 -m http.server $port > /dev/null 2>&1
+    setsid python3 -m http.server $port > /dev/null 2>&1 &
     pannel
 }
 
@@ -58,7 +58,7 @@ youtubedl_dl() {
 
 dlt_on_off() {
     if [ -z "$(ps -ef | grep "http.server" | grep -v "grep")" ];then
-        setsid python3 -m http.server $port > /dev/null 2>&1
+        setsid python3 -m http.server $port > /dev/null 2>&1 &
     else
         pkill python3
     fi
