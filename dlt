@@ -60,7 +60,7 @@ dlt_on_off() {
     if [ -z "$(ps -ef | grep "http.server" | grep -v "grep")" ];then
         setsid python3 -m http.server $port > /dev/null 2>&1 &
     else
-        pkill python3
+        kill -9 $(ps -ef | grep "http.server" | grep -v "grep" | awk '{print $2}')
     fi
     pannel
 }
