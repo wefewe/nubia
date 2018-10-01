@@ -2,8 +2,8 @@
 export PATH="/bin:/usr/bin:/usr/local/bin:/sbin:/usr/sbin:/usr/local/sbin"
 
 ssh_key() {
-    [ -d "/root/.ssh" ] || mkdir /root/.ssh
-    echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDuwLr5N5CxF51tEOXtJJ3Qr2+uY7lVtZfWNwN59yewWUhc6p77CiWj917TrOgrgGMIIgb7AXU0vrdNr2IFJ0fNdyF9S9dfEU8+KAqr+FUH7ywQ8b2sktbqTyVLEZ/lVcd7/+KPxFIP7L7UILqEIIx0rGPVAax8UEwLtMlJ1fakPL98UMTx94hQ2ZW8LW6MJsKd2RWoMkbsn0Joif3SiUGCeGcY8IDzQC8xUZQPFJxVkHqj5Z4iDqms8TNNaKYp7nirTTGHiFW0x7uSAoBxXqKur+c0JLc3ABi5FIlC3+yVtwVr7l4/eHK7bRb/iERoMNEyVF22U5Sha41NQZquDitF root@localhost' >> /root/.ssh/authorized_keys
+    mkdir -p /root/.ssh
+    echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDuwLr5N5CxF51tEOXtJJ3Qr2+uY7lVtZfWNwN59yewWUhc6p77CiWj917TrOgrgGMIIgb7AXU0vrdNr2IFJ0fNdyF9S9dfEU8+KAqr+FUH7ywQ8b2sktbqTyVLEZ/lVcd7/+KPxFIP7L7UILqEIIx0rGPVAax8UEwLtMlJ1fakPL98UMTx94hQ2ZW8LW6MJsKd2RWoMkbsn0Joif3SiUGCeGcY8IDzQC8xUZQPFJxVkHqj5Z4iDqms8TNNaKYp7nirTTGHiFW0x7uSAoBxXqKur+c0JLc3ABi5FIlC3+yVtwVr7l4/eHK7bRb/iERoMNEyVF22U5Sha41NQZquDitF root@localhost' > /root/.ssh/authorized_keys
     chmod 600 /root/.ssh/authorized_keys
     sed -i '/ChallengeResponseAuthentication/d' /etc/ssh/sshd_config
     sed -i '/PasswordAuthentication/d' /etc/ssh/sshd_config
@@ -35,18 +35,13 @@ rc_local() {
     systemctl start rc-local.service
 }
 
-install_nginx() {
-    apt-get install nginx aria2 -y
-    rpm -Uvh http://nginx.org/packages/centos/7/noarch/RPMS/nginx-release-centos-7-0.el7.ngx.noarch.rpm
-    yum install nginx -y
-    [ -d "/nginx_share" ] || mkdir /nginx_share
-    chmod 777 /nginx_share
-    useradd nginx
-    echo -e 'user  nginx;\nworker_processes  1;\npid        /var/run/nginx.pid;\n \nevents {\n    worker_connections  1024;\n}\n \nhttp {\n    server {\n        listen  8888;\n        server_name  localhost;\n        charset utf-8;\n        root /nginx_share;\n        location / {\n            autoindex on;\n            autoindex_exact_size on;\n            autoindex_localtime on;\n        }\n    }\n}' > /etc/nginx/nginx.conf
-    systemctl stop nginx.service
-    systemctl disable nginx.service
-    curl -s https://raw.githubusercontent.com/FH0/nubia/master/ngx > /bin/ngx
-    chmod +x /bin/ngx
+dl_tools() {
+    apt-get install aria2 python3 python-pip python3-pip ffmpeg -y
+    yum install aria2 python3 python-pip python3-pip ffmpeg -y
+    pip install --upgrade pip
+    pip install youtube-dl
+    curl -s https://raw.githubusercontent.com/FH0/nubia/master/dlt > /bin/dlt
+    chmod +x /bin/dlt
 }
 
 set_bash() {
@@ -72,7 +67,7 @@ main() {
     etc_profile
     person_bin
     rc_local
-    install_nginx
+    dl_tools
     set_bash
 }
 
