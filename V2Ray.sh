@@ -12,9 +12,10 @@ dl_pre() {
     
     v2ray_latest_version=$(curl -s https://github.com/v2ray/v2ray-core/releases/latest | grep -Eo 'v[0-9]\.[0-9][0-9]*')
     wget -N -P $wp --no-check-certificate https://github.com/v2ray/v2ray-core/releases/download/${v2ray_latest_version}/v2ray-linux-64.zip
-    unzip -o v2ray-linux-${linux_digits}.zip */v2ray */v2ctl
+    unzip -o v2ray-linux-64.zip */v2ray */v2ctl
     $(command -v cp) -f */v2ctl $wp ; $(command -v cp) -f */v2ray $wp
-    rm -rf v2ray-linux-${linux_digits}.zip $(dirname */v2ray)
+    rm -rf v2ray-linux-64.zip $(dirname */v2ray)
+    echo "29815 $(cat /proc/sys/kernel/random/uuid)" > $wp/v2ray.ini
 }
 
 install_v2ray() {
@@ -62,9 +63,9 @@ update_v2ray_core() {
     [ -z "$v2ray_version" ] && clear && pannel
     echo
     wget -N -P $wp --no-check-certificate https://github.com/v2ray/v2ray-core/releases/download/v${v2ray_version}/v2ray-linux-64.zip
-    unzip -o v2ray-linux-${linux_digits}.zip */v2ray */v2ctl
+    unzip -o v2ray-linux-64.zip */v2ray */v2ctl
     $(command -v cp) -f */v2ctl $wp ; $(command -v cp) -f */v2ray $wp
-    rm -rf v2ray-linux-${linux_digits}.zip $(dirname */v2ray)
+    rm -rf v2ray-linux-64.zip $(dirname */v2ray)
     chmod 777 -R $wp
     [ ! -z "$(pgrep v2ray)" ] && systemctl restart v2ray
     sleep 0.8 ; clear ; pannel
@@ -132,7 +133,7 @@ get_v2ray_config() {
     echo
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     for K in ${v2ray_ports};do
-        v2ray_uuid=$(grep "$K " $wp/v2ray.ini | awk '{print $2}'
+        v2ray_uuid=$(grep "$K " $wp/v2ray.ini | awk '{print $2}')
         v2rayNG=$(echo '{"add":"'$public_ip'","aid":"100","host":"k.youku.com","id":"'$v2ray_uuid'","net":"tcp","path":"","port":"'$K'","ps":"'$public_ip'","tls":"","type":"http","v":"2"}' | base64 | sed ':a;N;$!ba;s|\n||g' | sed 's|^|vmess://|')
         echo -e "v2rayNG: \033[33m${v2rayNG}\033[0m"
         echo
@@ -211,7 +212,7 @@ ports_setting() {
     ports_setting
 }
 
-connection_info() {
+show_connections() {
     awk_ports=$(grep -Eo "^[0-9][0-9]*$" $wp/v2ray.ini | sed 's|^|\:|g;s|$|\$|g' | tr "\n" "|" | sed 's|\|$||')
     connection_ip=$(netstat -anp | grep "^tcp.*ESTABLISHED" | awk '{if($4~/('$awk_ports')/)print $5}' | grep -Eo "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | sort -u)
     clear
