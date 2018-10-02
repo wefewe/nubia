@@ -9,13 +9,14 @@ dl_pre() {
     cat v2ray.service > /lib/systemd/system/v2ray.service
     cat koolproxy.service > /lib/systemd/system/koolproxy.service
     systemctl daemon-reload
-    
+
     v2ray_latest_version=$(curl -s https://github.com/v2ray/v2ray-core/releases/latest | grep -Eo 'v[0-9]\.[0-9][0-9]*')
     wget -N -P $wp --no-check-certificate https://github.com/v2ray/v2ray-core/releases/download/${v2ray_latest_version}/v2ray-linux-64.zip
     unzip -o v2ray-linux-64.zip */v2ray */v2ctl
     $(command -v cp) -f */v2ctl $wp ; $(command -v cp) -f */v2ray $wp
     rm -rf v2ray-linux-64.zip $(dirname */v2ray)
     echo "29815 $(cat /proc/sys/kernel/random/uuid)" > $wp/v2ray.ini
+    v2ray_config_reload
 }
 
 install_v2ray() {
@@ -30,12 +31,12 @@ install_v2ray() {
     v2ray_config_reload() {
         v2ray_config_line=$(cat $wp/v2ray.ini | wc -l)
         if [ "$v2ray_config_line" = "1" ];then
-            echo -e '{\n  "inbound": {\n    "port": '$(sed -n "1p" $wp/v2ray.ini)',\n    "protocol": "vmess",\n    "settings": {\n      "clients": [\n        {\n          "id": "'$(sed -n "2p" $wp/v2ray.ini)'",\n          "alterId": 100\n        }\n      ]\n    },\n    "streamSettings": {\n      "network": "tcp",\n      "tcpSettings": {\n        "header": {\n          "type": "http",\n          "response": {\n            "version": "1.1",\n            "status": "200",\n            "reason": "OK",\n            "headers": {\n              "Content-Type": [\n                "application/octet-stream",\n                "application/x-msdownload",\n                "text/html",\n                "application/x-shockwave-flash"\n              ],\n              "Connection": [\n                "keep-alive"\n              ]\n            }\n          }\n        }\n      }\n    }\n  },\n  "outbound": {\n    "protocol": "freedom",\n    "settings": {}\n  }\n}' > $wp/config.json
+            echo -e '{\n  "inbound": {\n    "port": '$(sed -n "1p" $wp/v2ray.ini | awk '{print $1}')',\n    "protocol": "vmess",\n    "settings": {\n      "clients": [\n        {\n          "id": "'$(sed -n "1p" $wp/v2ray.ini | awk '{print $2}')'",\n          "alterId": 100\n        }\n      ]\n    },\n    "streamSettings": {\n      "network": "tcp",\n      "tcpSettings": {\n        "header": {\n          "type": "http",\n          "response": {\n            "version": "1.1",\n            "status": "200",\n            "reason": "OK",\n            "headers": {\n              "Content-Type": [\n                "application/octet-stream",\n                "application/x-msdownload",\n                "text/html",\n                "application/x-shockwave-flash"\n              ],\n              "Connection": [\n                "keep-alive"\n              ]\n            }\n          }\n        }\n      }\n    }\n  },\n  "outbound": {\n    "protocol": "freedom",\n    "settings": {}\n  }\n}' > $wp/config.json
         elif (("$v2ray_config_line" > "1"));then
-            echo -e '{\n  "inbound": {\n    "port": '$(sed -n "1p" $wp/v2ray.ini)',\n    "protocol": "vmess",\n    "settings": {\n      "clients": [\n        {\n          "id": "'$(sed -n "2p" $wp/v2ray.ini)'",\n          "alterId": 100\n        }\n      ]\n    },\n    "streamSettings": {\n      "network": "tcp",\n      "tcpSettings": {\n        "header": {\n          "type": "http",\n          "response": {\n            "version": "1.1",\n            "status": "200",\n            "reason": "OK",\n            "headers": {\n              "Content-Type": [\n                "application/octet-stream",\n                "application/x-msdownload",\n                "text/html",\n                "application/x-shockwave-flash"\n              ],\n              "Connection": [\n                "keep-alive"\n              ]\n            }\n          }\n        }\n      }\n    }\n  },\n  "inboundDetour": [' > $wp/config.json
+            echo -e '{\n  "inbound": {\n    "port": '$(sed -n "1p" $wp/v2ray.ini |awk '{print $1}')',\n    "protocol": "vmess",\n    "settings": {\n      "clients": [\n        {\n          "id": "'$(sed -n "1p" $wp/v2ray.ini | awk '{print $2}')'",\n          "alterId": 100\n        }\n      ]\n    },\n    "streamSettings": {\n      "network": "tcp",\n      "tcpSettings": {\n        "header": {\n          "type": "http",\n          "response": {\n            "version": "1.1",\n            "status": "200",\n            "reason": "OK",\n            "headers": {\n              "Content-Type": [\n                "application/octet-stream",\n                "application/x-msdownload",\n                "text/html",\n                "application/x-shockwave-flash"\n              ],\n              "Connection": [\n                "keep-alive"\n              ]\n            }\n          }\n        }\n      }\n    }\n  },\n  "inboundDetour": [' > $wp/config.json
             v2ray_ports=$(grep -Eo "^[0-9]{1,5} " $wp/v2ray.ini)
             for N in ${v2ray_ports};do
-                v2ray_uuid=$(sed -n "${v2ray_uuid_line}p" $wp/v2ray.ini)
+                v2ray_uuid=$(grep "$N " $wp/v2ray.ini | awk '{print $2}')
                 echo -e '    {\n      "port": '$N',\n      "protocol": "vmess",\n      "settings": {\n        "clients": [\n          {\n            "id": "'$v2ray_uuid'",\n            "alterId": 100\n          }\n        ]\n      },\n      "streamSettings": {\n        "network": "tcp",\n        "tcpSettings": {\n          "header": {\n            "type": "http",\n            "response": {\n              "version": "1.1",\n              "status": "200",\n              "reason": "OK",\n              "headers": {\n                "Content-Type": [\n                  "application/octet-stream",\n                  "application/x-msdownload",\n                  "text/html",\n                  "application/x-shockwave-flash"\n                ],\n                "Connection": [\n                  "keep-alive"\n                ]\n              }\n            }\n          }\n        }\n      }\n    },' >> $wp/config.json
             done
             echo -e '  ],\n  "outbound": {\n    "protocol": "freedom",\n    "settings": {}\n  }\n}' >> $wp/config.json
@@ -51,7 +52,6 @@ uninstall_v2ray() {
     rm -rf $wp /bin/v2 /lib/systemd/system/koolproxy.service /lib/systemd/system/v2ray.service
     clear && echo " V2Ray已停止并且已卸载"
     echo
-    exit 0
 }
 
 update_v2ray_core() {
@@ -71,7 +71,7 @@ update_v2ray_core() {
     sleep 0.8 ; clear ; pannel
 }
 
-bbr_settings() {
+bbr_setting() {
     if (("$(uname -r | grep -Eo '^.')" > 3));then
         if [ -z "$(grep 'net.core.default_qdisc' /etc/sysctl.conf)" ];then
             echo "net.core.default_qdisc=fq" >> /etc/sysctl.conf
@@ -105,11 +105,11 @@ bbr_settings() {
     pannel
 }
 
-koolproxy_settings() {
+koolproxy_setting() {
     if [ -z "$(pgrep koolproxy)" ];then
-            systemctl start koolproxy ; systemctl enable koolproxy
-        else
-            systemctl stop koolproxy ; systemctl disable koolproxy
+        systemctl start koolproxy ; systemctl enable koolproxy
+    else
+        systemctl stop koolproxy ; systemctl disable koolproxy
     fi > /dev/null 2>&1
     sleep 0.8 ; clear ; pannel
 }
@@ -127,9 +127,9 @@ v2ray_on_off(){
     sleep 0.8 ; clear ; pannel
 }
 
-get_v2ray_config() {
+show_v2ray_config() {
     v2ray_ports=$(grep -Eo "^[0-9]{1,5} " $wp/v2ray.ini)
-    public_ip=$(grep "^##" | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}')
+    public_ip=$(grep "^##" $0 | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}')
     echo
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     for K in ${v2ray_ports};do
@@ -158,9 +158,9 @@ ports_setting() {
     echo -e "  \033[32m3.\033[0m 更改端口UUID"
     echo
     read -p "请选择: " ports_setting_choice
-    [ -z "$port_setting_choice" ] && clear && pannel
+    [ -z "$ports_setting_choice" ] && clear && pannel
     echo
-    if [ "$port_setting_choice" = "1" ];then
+    if [ "$ports_setting_choice" = "1" ];then
         read -p "请输入端口[每两个端口之间用一个空格隔开]: " v2ray_port
         [ -z "$v2ray_port" ] && ports_setting
         echo
@@ -175,7 +175,7 @@ ports_setting() {
             fi
             echo "$E $v2ray_uuid" >> $wp/v2ray.ini
         done
-    elif [ "$port_setting_choice" = "2" ];then
+    elif [ "$ports_setting_choice" = "2" ];then
         [ -z "$v2ray_ports" ] && ports_setting
         for S in ${v2ray_ports};do
             echo -e " \033[32m${var}.\033[0m 删除 \033[33m${S}\033[0m 端口"
@@ -188,7 +188,7 @@ ports_setting() {
         echo "回车继续"
         read
         sed -i "${del_port_choice}d" $wp/v2ray.ini
-    elif [ "$port_setting_choice" = "3" ];then
+    elif [ "$ports_setting_choice" = "3" ];then
         for S in ${v2ray_ports};do
             echo -e " \033[32m${var}.\033[0m 更改 \033[33m${S}\033[0m 端口UUID"
             var=$(($var+1))
@@ -213,7 +213,7 @@ ports_setting() {
 }
 
 show_connections() {
-    awk_ports=$(grep -Eo "^[0-9][0-9]*$" $wp/v2ray.ini | sed 's|^|\:|g;s|$|\$|g' | tr "\n" "|" | sed 's|\|$||')
+    awk_ports=$(awk '{print $1}' $wp/v2ray.ini | sed 's|^|\:|g;s|$|\$|g' | tr "\n" "|" | sed 's|\|$||')
     connection_ip=$(netstat -anp | grep "^tcp.*ESTABLISHED" | awk '{if($4~/('$awk_ports')/)print $5}' | grep -Eo "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | sort -u)
     clear
     v2ray_ports=$(grep -Eo "^[0-9]{1,5} " $wp/v2ray.ini)
@@ -233,9 +233,9 @@ pannel() {
     [ -z "$(lsmod | grep bbr)" ] && bbr_status=启动 || bbr_status=关闭
     [ -z "$(pgrep koolproxy)" ] && koolproxy_status=启动 || koolproxy_status=停止
     v2ray_version=$($wp/v2ray --version | sed -n "1p" | awk '{print $2}' | sed 's/.\(.*\)/\1/g')
-    awk_ports=$(grep -Eo "^[0-9][0-9]*$" $wp/v2ray.ini | sed 's|^|\:|g;s|$|\$|g' | tr "\n" "|" | sed 's|\|$||')
+    awk_ports=$(awk '{print $1}' $wp/v2ray.ini | sed 's|^|\:|g;s|$|\$|g' | tr "\n" "|" | sed 's|\|$||')
     connection_total=$(netstat -anp | grep "^tcp.*ESTABLISHED" | awk '{if($4~/('$awk_ports')/)print $5}' | grep -Eo "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | sort -u | wc -l)
-    v2ray_ports=$(grep "^[0-9][0-9]*$" $wp/v2ray.ini | tr "\n" " ")
+    v2ray_ports=$(grep -Eo "^[0-9]{1,5} " $wp/v2ray.ini | sed ':a;N;$!ba;s| \n| |')
 
     echo " V2Ray多功能脚本，欢迎使用"
     echo
@@ -266,6 +266,7 @@ pannel() {
             ;;
         3)
             uninstall_v2ray
+            exit 0
             ;;
         4)
             ports_setting
@@ -274,7 +275,7 @@ pannel() {
             show_v2ray_config
             ;;
         6)
-        [ "$connection_total" = "0" ] && pannel
+            [ "$connection_total" = "0" ] && pannel
             show_connections
             ;;
         7)
@@ -294,7 +295,19 @@ pannel() {
             ;;
     esac
 }
-
+if [ "$1" = "koolproxy" ];then
+    if [ "$2" = "start" ];then
+        useradd koolproxy
+        iptables -t nat -A OUTPUT -m owner --uid-owner koolproxy -j ACCEPT
+        iptables -t nat -A OUTPUT -p tcp --dport 80 -j REDIRECT --to 3000
+        su - koolproxy -c "/bin/v2ray/koolproxy"
+    else
+        iptables -t nat -D OUTPUT -m owner --uid-owner koolproxy -j ACCEPT
+        iptables -t nat -D OUTPUT -p tcp --dport 80 -j REDIRECT --to 3000
+        pkill koolproxy
+    fi
+    exit 0
+fi
 if [ -d "$wp" ];then
     clear && pannel
 else
