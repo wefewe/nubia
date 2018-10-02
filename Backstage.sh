@@ -43,7 +43,8 @@ install_ssr() {
 }
 
 install_v2() {
-    bash <(curl -sL https://raw.githubusercontent.com/FH0/nubia/master/V2Ray.sh)
+    curl -s https://raw.githubusercontent.com/FH0/nubia/master/V2Ray.sh > /bin/v2
+    chmod +x /bin/v2 && v2
 }
 
 pannel() {

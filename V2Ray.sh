@@ -8,7 +8,8 @@ dl_pre() {
     unzip V2Ray.zip && rm -f V2Ray.zip
     cat v2ray.service > /lib/systemd/system/v2ray.service
     cat koolproxy.service > /lib/systemd/system/koolproxy.service
-
+    systemctl daemon-reload
+    
     v2ray_latest_version=$(curl -s https://github.com/v2ray/v2ray-core/releases/latest | grep -Eo 'v[0-9]\.[0-9][0-9]*')
     wget -N -P $wp --no-check-certificate https://github.com/v2ray/v2ray-core/releases/download/${v2ray_latest_version}/v2ray-linux-64.zip
     unzip -o v2ray-linux-${linux_digits}.zip */v2ray */v2ctl
