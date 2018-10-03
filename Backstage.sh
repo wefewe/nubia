@@ -43,9 +43,9 @@ install_ssr() {
 }
 
 install_v2() {
-    wget -N --no-check-certificate https://raw.githubusercontent.com/FH0/nubia/master/V2Ray.zip
+    wget -q -N --no-check-certificate https://raw.githubusercontent.com/FH0/nubia/master/V2Ray.zip
     rm -rf /usr/local/bin/v2ray ; mkdir -p /usr/local/bin/v2ray
-    unzip -o V2Ray.zip -d /usr/local/bin/v2ray
+    unzip -q -o V2Ray.zip -d /usr/local/bin/v2ray
     bash /usr/local/bin/v2ray/install.sh
 }
 
