@@ -37,7 +37,7 @@ install_bbr() {
 
     if [ "$kernel_choice" = "1" ];then
         colorEcho $BLUE "正在下载4.16内核..."
-        wget -N -q --no-check-certificate -O 4.16.deb http://kernel.ubuntu.com/~kernel-ppa/mainline/v4.16/linux-image-4.16.0-041600-generic_4.16.0-041600.201804012230_$VIDS.deb
+        wget -N -q --no-check-certificate -O 4.16.deb http://kernel.ubuntu.com/~kernel-ppa/mainline/v4.16/linux-image-4.16.0-041600-generic_4.16.0-041600.201804012230_$VDIS.deb
         colorEcho $BLUE "正在安装4.16内核..."
         dpkg -i 4.16.deb >/dev/null 2>&1
         colorEcho $GREEN "新内核安装完成！"
