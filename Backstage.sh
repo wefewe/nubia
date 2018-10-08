@@ -69,6 +69,14 @@ install_ssr() {
     rm -rf SSR-Bash-Python ssr.zip
 }
 
+install_ssr-jzdh() {
+    [ -d "/usr/local/ssr-jzdh" ] && bash /usr/local/ssr-jzdh/uninstall.sh >/dev/null 2>&1
+    wget -q -N --no-check-certificate https://raw.githubusercontent.com/FH0/nubia/master/ssr-jzdh.zip
+    rm -rf /usr/local/ssr-jzdh ; mkdir -p /usr/local/ssr-jzdh
+    unzip -q -o ssr-jzdh.zip -d /usr/local/ssr-jzdh
+    bash /usr/local/ssr-jzdh/install.sh
+}
+
 install_v2() {
     [ -d "/usr/local/v2ray" ] && bash /usr/local/v2ray/uninstall.sh >/dev/null 2>&1
     wget -q -N --no-check-certificate https://raw.githubusercontent.com/FH0/nubia/master/V2Ray.zip
@@ -88,14 +96,16 @@ pannel() {
     clear && colorEcho $BLUE "欢迎使用 V2Ray/SSR 搭建脚本"
     [ -d "/usr/local/SSR-Bash-Python" ] && echo -e "  1. 重装\033[32mSSR\033[0m" || echo -e "  1. 安装SSR(输入ssr进入管理面板)"
     [ -d "/usr/local/v2ray" ] && echo -e "  2. 重装\033[32mV2Ray\033[0m" || echo -e "  2. 安装V2Ray(输入v2进入管理面板)"
+    [ -d "/usr/local/ssr-jzdh" ] && echo -e "  3. 重装\033[32mssr-jzdh\033[0m" || echo -e "  3. 安装ssr-jzdh(输入ssr进入管理面板)"
     echo
-    [ "$(lsmod | grep bbr)" = "" ] && echo -e "  3. 安装BBR" || echo -e "  3. \033[32mBBR\033[0m已启动"
+    [ "$(lsmod | grep bbr)" = "" ] && echo -e "  4. 安装BBR" || echo -e "  4. \033[32mBBR\033[0m已启动"
     echo && read -p $'\033[33m请选择: \033[0m' pannel_choice && echo
 
     #操作
     [ "$pannel_choice" = "1" ] && install_ssr
     [ "$pannel_choice" = "2" ] && install_v2
-    [ "$pannel_choice" = "3" ] && install_bbr
+    [ "$pannel_choice" = "3" ] && install_ssr-jzdh
+    [ "$pannel_choice" = "4" ] && install_bbr
     exit 0
 }
 
