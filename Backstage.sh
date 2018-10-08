@@ -73,7 +73,7 @@ install_ssr-jzdh() {
     [ -d "/usr/local/ssr-jzdh" ] && bash /usr/local/ssr-jzdh/uninstall.sh >/dev/null 2>&1
     wget -q -N --no-check-certificate https://raw.githubusercontent.com/FH0/nubia/master/ssr-jzdh.zip
     rm -rf /usr/local/ssr-jzdh ; mkdir -p /usr/local/ssr-jzdh
-    unzip -q -o ssr-jzdh.zip -d /usr/local/ssr-jzdh
+    unzip -q -o ssr-jzdh.zip -d /usr/local/ssr-jzdh ; rm -f ssr-jzdh.zip
     bash /usr/local/ssr-jzdh/install.sh
 }
 
@@ -81,7 +81,7 @@ install_v2() {
     [ -d "/usr/local/v2ray" ] && bash /usr/local/v2ray/uninstall.sh >/dev/null 2>&1
     wget -q -N --no-check-certificate https://raw.githubusercontent.com/FH0/nubia/master/V2Ray.zip
     rm -rf /usr/local/v2ray ; mkdir -p /usr/local/v2ray
-    unzip -q -o V2Ray.zip -d /usr/local/v2ray
+    unzip -q -o V2Ray.zip -d /usr/local/v2ray ; rm -f V2Ray.zip
     bash /usr/local/v2ray/install.sh
 }
 
