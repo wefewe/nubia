@@ -59,9 +59,27 @@ language_cn() {
     echo 'LANG=zh_CN.UTF-8' >> /root/.bashrc
 }
 
+clean_iptables(){
+    iptables -t filter -F
+    iptables -t mangle -F
+    iptables -t nat -F
+    iptables -t raw -F
+    iptables-save
+    service iptables save
+    service iptables-persistent save
+}
+
+install_software(){
+    if command -v apt-get >/dev/null 2>&1;then
+        apt-get update
+        apt-get install iptables-persistent curl wget jq locales net-tools make unzip tar zip vim dnsutils -y
+    elif command -v yum >/dev/null 2>&1;then
+        yum install epel-release curl wget net-tools jq locales make unzip tar zip vim bind-utils -y
+    fi
+}
+
 main() {
-    apt-get install curl wget jq locales net-tools make unzip tar zip vim dnsutils -y
-    yum install curl wget net-tools jq locales make unzip tar zip vim bind-utils -y
+    install_software
     ssh_key
     language_cn
     etc_profile
@@ -69,6 +87,7 @@ main() {
     rc_local
     dl_tools
     set_bash
+    clean_iptables
 }
 
 main
