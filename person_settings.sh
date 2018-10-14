@@ -35,15 +35,6 @@ rc_local() {
     systemctl start rc-local.service
 }
 
-dl_tools() {
-    apt-get install aria2 python3 python-pip python3-pip ffmpeg -y
-    yum install aria2 python3 python-pip python3-pip ffmpeg -y
-    pip install --upgrade pip
-    pip install youtube-dl
-    curl -s https://raw.githubusercontent.com/FH0/nubia/master/dlt > /bin/dlt
-    chmod +x /bin/dlt
-}
-
 set_bash() {
     sed -i '/^PS1/d' /root/.bashrc
     echo "PS1='\[\e[47;30m\]\u@debian\[\e[m\]:\w\\$ '" >> /root/.bashrc
@@ -85,10 +76,8 @@ main() {
     etc_profile
     person_bin
     rc_local
-    dl_tools
     set_bash
     clean_iptables
 }
 
-main
-clear
+main && clear
