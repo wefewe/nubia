@@ -31,7 +31,6 @@ install_bbr() {
     colorEcho $YELLOW "新内核安装后重启服务器，再次执行本脚本即可开启BBR"
     echo "  1. 32/64位 Debian8 Ubuntu14.04 Ubuntu16.04"
     echo "  2. 32/64位 CentOS7"
-    echo "  3. 32/64位 CentOS6"
     echo
     read -p $'\033[33m请选择: \033[0m' kernel_choice && echo
 
@@ -49,14 +48,6 @@ install_bbr() {
         yum --enablerepo=elrepo-kernel install kernel-ml -y >/dev/null 2>&1
         grub2-set-default 0
         grub2-mkconfig -o /boot/grub2/grub.cfg >/dev/null 2>&1
-        colorEcho $GREEN "新内核安装完成！"
-    elif [ "$kernel_choice" = "3" ];then
-        colorEcho $BLUE "正在添加源支持..."
-        rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org >/dev/null 2>&1
-        rpm -Uvh http://www.elrepo.org/elrepo-release-6-8.el6.elrepo.noarch.rpm >/dev/null 2>&1
-        colorEcho $BLUE "正在安装最新内核..."
-        yum --enablerepo=elrepo-kernel install kernel-ml -y >/dev/null 2>&1
-        sed -i 's|default=[0-9]*|default=0|' /boot/grub/grub.conf
         colorEcho $GREEN "新内核安装完成！"
     fi
 }
@@ -85,6 +76,14 @@ install_v2() {
     bash /usr/local/v2ray/install.sh
 }
 
+install_ariang() {
+    [ -d "/usr/local/AriaNG" ] && bash /usr/local/AriaNG/uninstall.sh >/dev/null 2>&1
+    wget -q -N --no-check-certificate https://raw.githubusercontent.com/FH0/nubia/master/AriaNG.zip
+    rm -rf /usr/local/AriaNG ; mkdir -p /usr/local/AriaNG
+    unzip -q -o AriaNG.zip -d /usr/local/AriaNG ; rm -f AriaNG.zip
+    bash /usr/local/AriaNG/install.sh
+}
+
 pannel() {
     clear && colorEcho $BLUE " 正在安装必要组件,请耐心等待"
     command -v yum >/dev/null 2>&1 && Installer=yum
@@ -94,11 +93,12 @@ pannel() {
 
     #用户选择
     clear && colorEcho $BLUE "欢迎使用 V2Ray/SSR 搭建脚本"
-    [ -d "/usr/local/SSR-Bash-Python" ] && echo -e "  1. 重装\033[32mSSR\033[0m" || echo -e "  1. 安装SSR(输入ssr进入管理面板)"
-    [ -d "/usr/local/v2ray" ] && echo -e "  2. 重装\033[32mV2Ray\033[0m" || echo -e "  2. 安装V2Ray(输入v2进入管理面板)"
-    [ -d "/usr/local/ssr-jzdh" ] && echo -e "  3. 重装\033[32mssr-jzdh\033[0m" || echo -e "  3. 安装ssr-jzdh(输入ssr进入管理面板)"
+    [ -d "/usr/local/SSR-Bash-Python" ] && echo -e "  1. 重装\033[32mSSR\033[0m" || echo -e "  1. 安装SSR"
+    [ -d "/usr/local/v2ray" ] && echo -e "  2. 重装\033[32mV2Ray\033[0m" || echo -e "  2. 安装V2Ray"
+    [ -d "/usr/local/ssr-jzdh" ] && echo -e "  3. 重装\033[32mssr-jzdh\033[0m" || echo -e "  3. 安装ssr-jzdh"
     echo
     [ "$(lsmod | grep bbr)" = "" ] && echo -e "  4. 安装BBR" || echo -e "  4. \033[32mBBR\033[0m已启动"
+    [ -d "/usr/local/AriaNG" ] && echo -e "  5. 重装\033[32mAriaNG\033[0m" || echo -e "  3. 安装AriaNG(输入ag进入管理面板)"
     echo && read -p $'\033[33m请选择: \033[0m' pannel_choice && echo
 
     #操作
@@ -106,6 +106,7 @@ pannel() {
     [ "$pannel_choice" = "2" ] && install_v2
     [ "$pannel_choice" = "3" ] && install_ssr-jzdh
     [ "$pannel_choice" = "4" ] && install_bbr
+    [ "$pannel_choice" = "5" ] && install_ariang
     exit 0
 }
 
