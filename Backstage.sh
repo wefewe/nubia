@@ -98,7 +98,7 @@ pannel() {
     [ -d "/usr/local/ssr-jzdh" ] && echo -e "  3. 重装\033[32mssr-jzdh\033[0m" || echo -e "  3. 安装ssr-jzdh"
     echo
     [ "$(lsmod | grep bbr)" = "" ] && echo -e "  4. 安装BBR" || echo -e "  4. \033[32mBBR\033[0m已启动"
-    [ -d "/usr/local/AriaNG" ] && echo -e "  5. 重装\033[32mAriaNG\033[0m" || echo -e "  3. 安装AriaNG(输入ag进入管理面板)"
+    [ -d "/usr/local/AriaNG" ] && echo -e "  5. 重装\033[32mAriaNG\033[0m" || echo -e "  5. 安装AriaNG(输入ag进入管理面板)"
     echo && read -p $'\033[33m请选择: \033[0m' pannel_choice && echo
 
     #操作
