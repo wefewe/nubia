@@ -20,27 +20,15 @@ install_bbr() {
         echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.conf
         sysctl -p >/dev/null 2>&1 && colorEcho $GREEN "BBR启动成功！" && exit 0
     fi
-
-    if [ "$(uname -m)" = "x86_64" ];then
-        VDIS=amd64
-    elif [ "$(uname -m)" = "i686" ] || [ "$(uname -m)" = "i386" ];then
-        VDIS=i386
-    fi
     
-    clear
-    colorEcho $YELLOW "新内核安装后重启服务器，再次执行本脚本即可开启BBR"
-    echo "  1. 32/64位 Debian8 Ubuntu14.04 Ubuntu16.04"
-    echo "  2. 32/64位 CentOS7"
-    echo
-    read -p $'\033[33m请选择: \033[0m' kernel_choice && echo
-
-    if [ "$kernel_choice" = "1" ];then
+    if [ -z "$(command -v yum)" ];then
         colorEcho $BLUE "正在下载4.16内核..."
-        wget -N -q --no-check-certificate -O 4.16.deb http://kernel.ubuntu.com/~kernel-ppa/mainline/v4.16/linux-image-4.16.0-041600-generic_4.16.0-041600.201804012230_$VDIS.deb
+        wget -N -q --no-check-certificate -O 4.16.deb http://kernel.ubuntu.com/~kernel-ppa/mainline/v4.16/linux-image-4.16.0-041600-generic_4.16.0-041600.201804012230_amd64.deb
         colorEcho $BLUE "正在安装4.16内核..."
         dpkg -i 4.16.deb >/dev/null 2>&1
         colorEcho $GREEN "新内核安装完成！"
-    elif [ "$kernel_choice" = "2" ];then
+        colorEcho $YELLOW "请重启系统后再次执行本脚本即可安装BBR！"
+    else
         colorEcho $BLUE "正在添加源支持..."
         rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org >/dev/null 2>&1
         rpm -Uvh http://www.elrepo.org/elrepo-release-7.0-3.el7.elrepo.noarch.rpm >/dev/null 2>&1
@@ -49,6 +37,7 @@ install_bbr() {
         grub2-set-default 0
         grub2-mkconfig -o /boot/grub2/grub.cfg >/dev/null 2>&1
         colorEcho $GREEN "新内核安装完成！"
+        colorEcho $YELLOW "请重启系统后再次执行本脚本即可安装BBR！"
     fi
 }
 
@@ -84,24 +73,50 @@ install_ariang() {
     bash /usr/local/AriaNG/install.sh
 }
 
-pannel() {
-    clear && colorEcho $BLUE " 正在安装必要组件,请耐心等待"
-    command -v yum >/dev/null 2>&1 && Installer=yum
-    command -v apt-get >/dev/null 2>&1 && Installer=apt-get
-    [ -z "$Installer" ] && colorEcho $RED "没有找到apt-get或者yum！" && exit 1
-    $Installer install unzip wget net-tools curl -y > /dev/null 2>&1
+check_system() {
+    if [ -z "$(command -v yum)" ] && [ -z "$(command -v apt-get)" ];then
+        colorEcho $RED "缺少apt-get或者yum！"
+        exit 1
+    fi
+    if [ -z "$(command -v systemctl)" ];then
+        colorEcho $RED "缺少systemctl！"
+        exit 1
+    fi
+    if [ -z "$(uname -m | grep 'x86_64')" ];then
+        colorEcho $RED "不支持的CPU架构！"
+        exit 1
+    fi
+}
 
-    #用户选择
-    clear && colorEcho $BLUE "欢迎使用 V2Ray/SSR 搭建脚本"
-    [ -d "/usr/local/SSR-Bash-Python" ] && echo -e "  1. 重装\033[32mSSR\033[0m" || echo -e "  1. 安装SSR"
-    [ -d "/usr/local/v2ray" ] && echo -e "  2. 重装\033[32mV2Ray\033[0m" || echo -e "  2. 安装V2Ray"
-    [ -d "/usr/local/ssr-jzdh" ] && echo -e "  3. 重装\033[32mssr-jzdh\033[0m" || echo -e "  3. 安装ssr-jzdh"
-    echo
-    [ "$(lsmod | grep bbr)" = "" ] && echo -e "  4. 安装BBR" || echo -e "  4. \033[32mBBR\033[0m已启动"
-    [ -d "/usr/local/AriaNG" ] && echo -e "  5. 重装\033[32mAriaNG\033[0m" || echo -e "  5. 安装AriaNG(输入ag进入管理面板)"
+necessary_binary() {
+    clear && colorEcho $BLUE "正在安装必要组件,请耐心等待"
+    if [ -z "$(command -v yum)" ];then
+        apt-get update
+        apt-get install unzip wget net-tools curl -y
+    else
+        yum install unzip wget net-tools curl -y
+    fi > /dev/null 2>&1
+}
+
+pannel() {
+    check_system
+    necessary_binary
+
+    [ -d "/usr/local/SSR-Bash-Python" ] && ssr_status="重装" || ssr_status="安装"
+    [ -d "/usr/local/v2ray" ] && v2ray_status="重装" || v2ray_status="安装"
+    [ -d "/usr/local/ssr-jzdh" ] && ssr-jzdh_status="重装" || ssr-jzdh_status="安装"
+    [ "$(lsmod | grep bbr)" = "" ] && bbr_status="已启动" || bbr_status="安装"
+    [ -d "/usr/local/AriaNG" ] && ariang_status="重装" || ariang_status="安装"
+    var=1
+    
+    clear && colorEcho $BLUE "欢迎使用JZDH集合脚本"
+    echo "  $var. ${ssr_status}SSR" && var=$(($var+1))
+    echo "  $var. ${v2ray_status}V2Ray" && var=$(($var+1))
+    echo "  $var. ${ssr-jzdh_status}ssr-jzdh" && var=$(($var+1))
+    echo "  $var. ${bbr_status}BBR" && var=$(($var+1))
+    echo "  $var. ${ariang_status}AriaNG" && var=$(($var+1))
     echo && read -p $'\033[33m请选择: \033[0m' pannel_choice && echo
 
-    #操作
     [ "$pannel_choice" = "1" ] && install_ssr
     [ "$pannel_choice" = "2" ] && install_v2
     [ "$pannel_choice" = "3" ] && install_ssr-jzdh
