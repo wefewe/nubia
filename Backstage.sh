@@ -104,7 +104,7 @@ pannel() {
 
     [ -d "/usr/local/SSR-Bash-Python" ] && ssr_status="重装" || ssr_status="安装"
     [ -d "/usr/local/v2ray" ] && v2ray_status="重装" || v2ray_status="安装"
-    [ -d "/usr/local/ssr-jzdh" ] && ssr-jzdh_status="重装" || ssr-jzdh_status="安装"
+    [ -d "/usr/local/ssr-jzdh" ] && ssrjzdh_status="重装" || ssrjzdh_status="安装"
     [ "$(lsmod | grep bbr)" = "" ] && bbr_status="已启动" || bbr_status="安装"
     [ -d "/usr/local/AriaNG" ] && ariang_status="重装" || ariang_status="安装"
     var=1
@@ -112,7 +112,7 @@ pannel() {
     clear && colorEcho $BLUE "欢迎使用JZDH集合脚本"
     echo "  $var. ${ssr_status}SSR" && var=$(($var+1))
     echo "  $var. ${v2ray_status}V2Ray" && var=$(($var+1))
-    echo "  $var. ${ssr-jzdh_status}ssr-jzdh" && var=$(($var+1))
+    echo "  $var. ${ssrjzdh_status}ssr-jzdh" && var=$(($var+1))
     echo "  $var. ${bbr_status}BBR" && var=$(($var+1))
     echo "  $var. ${ariang_status}AriaNG" && var=$(($var+1))
     echo && read -p $'\033[33m请选择: \033[0m' pannel_choice && echo
