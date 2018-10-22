@@ -1,14 +1,14 @@
 #!/bin/bash
 export PATH="/bin:/usr/bin:/usr/local/bin:/sbin:/usr/sbin:/usr/local/sbin"
 
-RED="31m"      # Error message
-GREEN="32m"    # Success message
-YELLOW="33m"   # Warning message
-BLUE="36m"     # Info message
+RED="\033[31m"      # Error message
+GREEN="\033[32m"    # Success message
+YELLOW="\033[33m"   # Warning message
+BLUE="\033[36m"     # Info message
 
 colorEcho(){
     COLOR=$1
-    echo -e "\033[${COLOR}${@:2}\033[0m"
+    echo -e "${COLOR}${@:2}\033[0m"
     echo
 }
 
@@ -51,7 +51,7 @@ install_bbr() {
 }
 
 install_ssr() {
-    [ -d "/usr/local/SSR-Bash-Python" ] && bash /usr/local/SSR-Bash-Python/uninstall.sh >/dev/null 2>&1
+    [ "$ssr_status" = "$GREEN" ] && bash /usr/local/SSR-Bash-Python/uninstall.sh >/dev/null 2>&1
     wget -N --no-check-certificate https://raw.githubusercontent.com/FH0/nubia/master/ssr.zip
     unzip -o ssr.zip
     bash SSR-Bash-Python/install.sh
@@ -59,7 +59,7 @@ install_ssr() {
 }
 
 install_ssr_jzdh() {
-    [ -d "/usr/local/ssr_jzdh" ] && bash /usr/local/ssr_jzdh/uninstall.sh >/dev/null 2>&1
+    [ "$ssr_jzdh_status" = "$GREEN" ] && bash /usr/local/ssr_jzdh/uninstall.sh >/dev/null 2>&1
     wget -q -N --no-check-certificate https://raw.githubusercontent.com/FH0/nubia/master/ssr_jzdh.zip
     rm -rf /usr/local/ssr_jzdh ; mkdir -p /usr/local/ssr_jzdh
     unzip -q -o ssr_jzdh.zip -d /usr/local/ssr_jzdh ; rm -f ssr_jzdh.zip
@@ -67,7 +67,7 @@ install_ssr_jzdh() {
 }
 
 install_v2() {
-    [ -d "/usr/local/v2ray" ] && bash /usr/local/v2ray/uninstall.sh >/dev/null 2>&1
+    [ "$v2ray_status" = "$GREEN" ] && bash /usr/local/v2ray/uninstall.sh >/dev/null 2>&1
     wget -q -N --no-check-certificate https://raw.githubusercontent.com/FH0/nubia/master/V2Ray.zip
     rm -rf /usr/local/v2ray ; mkdir -p /usr/local/v2ray
     unzip -q -o V2Ray.zip -d /usr/local/v2ray ; rm -f V2Ray.zip
@@ -75,7 +75,7 @@ install_v2() {
 }
 
 install_ariang() {
-    [ -d "/usr/local/AriaNG" ] && bash /usr/local/AriaNG/uninstall.sh >/dev/null 2>&1
+    [ "$ariang_status" = "$GREEN" ] && bash /usr/local/AriaNG/uninstall.sh >/dev/null 2>&1
     wget -q -N --no-check-certificate https://raw.githubusercontent.com/FH0/nubia/master/AriaNG.zip
     rm -rf /usr/local/AriaNG ; mkdir -p /usr/local/AriaNG
     unzip -q -o AriaNG.zip -d /usr/local/AriaNG ; rm -f AriaNG.zip
@@ -111,19 +111,19 @@ pannel() {
     check_system
     necessary_binary
 
-    [ -d "/usr/local/SSR-Bash-Python" ] && ssr_status="重装" || ssr_status="安装"
-    [ -d "/usr/local/v2ray" ] && v2ray_status="重装" || v2ray_status="安装"
-    [ -d "/usr/local/ssr_jzdh" ] && ssr_jzdh_status="重装" || ssr_jzdh_status="安装"
-    [ -z "$(lsmod | grep bbr)" ] && bbr_status="已启动" || bbr_status="安装"
-    [ -d "/usr/local/AriaNG" ] && ariang_status="重装" || ariang_status="安装"
+    [ -d "/usr/local/SSR-Bash-Python" ] && ssr_status="$GREEN" || ssr_status=""
+    [ -d "/usr/local/v2ray" ] && v2ray_status="$GREEN" || v2ray_status=""
+    [ -d "/usr/local/ssr_jzdh" ] && ssr_jzdh_status="$GREEN" || ssr_jzdh_status=""
+    [ ! -z "$(lsmod | grep bbr)" ] && bbr_status="$GREEN" || bbr_status=""
+    [ -d "/usr/local/AriaNG" ] && ariang_status="$GREEN" || ariang_status=""
     var=1
     
     clear && colorEcho $BLUE "欢迎使用JZDH集合脚本"
-    echo "  $var. ${ssr_status}SSR" && var=$(($var+1))
-    echo "  $var. ${v2ray_status}V2Ray" && var=$(($var+1))
-    echo "  $var. ${ssr_jzdh_status}ssr_jzdh" && var=$(($var+1))
-    echo "  $var. ${bbr_status}BBR" && var=$(($var+1))
-    echo "  $var. ${ariang_status}AriaNG" && var=$(($var+1))
+    echo -e "  $var. 安装${ssr_status}SSR\033[0m" && var=$(($var+1))
+    echo -e "  $var. 安装${v2ray_status}V2Ray\033[0m" && var=$(($var+1))
+    echo -e "  $var. 安装${ssr_jzdh_status}ssr_jzdh\033[0m" && var=$(($var+1))
+    echo -e "  $var. 安装${bbr_status}BBR\033[0m" && var=$(($var+1))
+    echo -e "  $var. 安装${ariang_status}AriaNG\033[0m" && var=$(($var+1))
     echo && read -p $'\033[33m请选择: \033[0m' pannel_choice && echo
 
     [ "$pannel_choice" = "1" ] && install_ssr
